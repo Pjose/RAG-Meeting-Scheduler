@@ -1,0 +1,25 @@
+Context & Role:
+Act as an expert WordPress developer and UI/UX designer. I want to build a custom web application on WordPress to manage Alcoholics Anonymous (AA) meetings, chairpersons, and contact information.
+Core Objective:
+Develop a centralized, database-driven directory for meeting schedules that allows administrators to easily assign co-chairpersons, and general contacts to specific meetings, while providing a clean, public-facing schedule for members.
+1. Database Schema & Custom Post Types (CPTs)
+Create three Custom Post Types with custom meta fields:
+Meetings: Title (Meeting Name), Day of the Week, Time (Start/End), Location/Link, Type (Open, Closed, Beginners etc.), Format (Discussion, Book Study, Speaker, Call-Up), Literature (Big Book, 12 & 12, Grapevine etc.), Interaction (In-Person, Online, Hybrid), Language (English, Spanish etc.), and Notes.
+People: Name (or anonymous identifier), Role (Chairperson, Co-Chairperson, Secretary, Treasurer, GSR, Intergroup, PI, H&I, Communication, Unity, Meeting Co-Chair, Member, Alternate GSR, Alternate Treasurer, Alternate Intergroup, Assistant Communication etc.), Phone Number, Email, and Clean Date (optional).
+Relationships: Create a linking mechanism (taxonomy or custom field relationship) connecting specific People to specific Meetings.
+2. User Roles & Permissions
+Super Admin: Has full access to manage the site, all CPTs, and user accounts.
+Trusted Servants: Users assigned to this role can only edit the roster and schedule details for their specific "home group" or assigned meetings.
+Group Members: Users can view the schedule and contact info. 
+Public Users: Visitors who can view the schedule.
+3. Frontend Features (Public Facing)
+Interactive Schedule: A filterable and searchable schedule displayed in a weekly grid or daily list format.
+Meeting Details Modal: When a meeting is clicked, a modal should display the time, location, special notes, and the contact/chairperson info.
+Contact System: A protected contact form or secure display of chairperson contact details (hide emails/phones from web scrapers; require login or captchas).
+Responsive Design: Mobile-friendly, high-contrast, and clean interface.4. Backend Dashboard (Admin Facing)Roster Management: An intuitive dashboard where admins can easily drag, drop, or select a Chairperson from the "People" CPT and assign them to a meeting.
+Calendar View: A calendar or table interface to see which chairpersons are assigned to which dates/meetings over the coming months.
+Export/Import: CSV export and import capabilities for backup and bulk updates.
+5. WordPress Best Practices
+Framework: Write the app using Custom Post Types, Custom Taxonomies, and the WordPress REST API.
+Tech Stack: Use HTML, CSS, JavaScript (React or Vue for the frontend dashboard and filtering), and PHP for the WordPress backend.
+Security: Implement strict nonces, user capability checks for all front-end/back-end submissions, and GDPR-compliant data masking.

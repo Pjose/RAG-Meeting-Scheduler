@@ -3,13 +3,22 @@ info:
   # Do not change the title, if the title changes, the import paths will be broken
   title: Api
   version: 0.1.0
-  description: API specification
+  description: AA Meetings Management API
 servers:
   - url: /api
     description: Base API path
 tags:
   - name: health
     description: Health operations
+  - name: meetings
+    description: Meeting operations
+  - name: people
+    description: People/contacts operations
+  - name: assignments
+    description: Meeting-person assignment operations
+  - name: schedule
+    description: Schedule view operations
+
 paths:
   /healthz:
     get:
@@ -24,6 +33,313 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/HealthStatus"
+
+  /meetings:
+    get:
+      operationId: listMeetings
+      tags: [meetings]
+      summary: List all meetings
+      parameters:
+        - name: day
+          in: query
+          schema:
+            type: string
+        - name: type
+          in: query
+          schema:
+            type: string
+        - name: format
+          in: query
+          schema:
+            type: string
+        - name: interaction
+          in: query
+          schema:
+            type: string
+        - name: language
+          in: query
+          schema:
+            type: string
+        - name: search
+          in: query
+          schema:
+            type: string
+      responses:
+        "200":
+          description: List of meetings
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Meeting"
+    post:
+      operationId: createMeeting
+      tags: [meetings]
+      summary: Create a meeting
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/MeetingInput"
+      responses:
+        "201":
+          description: Created meeting
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Meeting"
+
+  /meetings/{id}:
+    get:
+      operationId: getMeeting
+      tags: [meetings]
+      summary: Get meeting details
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Meeting with assigned people
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MeetingDetail"
+        "404":
+          description: Not found
+    patch:
+      operationId: updateMeeting
+      tags: [meetings]
+      summary: Update a meeting
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/MeetingUpdate"
+      responses:
+        "200":
+          description: Updated meeting
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Meeting"
+        "404":
+          description: Not found
+    delete:
+      operationId: deleteMeeting
+      tags: [meetings]
+      summary: Delete a meeting
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+
+  /meetings/{id}/people:
+    get:
+      operationId: getMeetingPeople
+      tags: [assignments]
+      summary: Get people assigned to a meeting
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: List of assigned people
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/PersonAssignment"
+    post:
+      operationId: assignPersonToMeeting
+      tags: [assignments]
+      summary: Assign a person to a meeting
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AssignmentInput"
+      responses:
+        "201":
+          description: Created assignment
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PersonAssignment"
+
+  /meetings/{id}/people/{personId}:
+    delete:
+      operationId: removePersonFromMeeting
+      tags: [assignments]
+      summary: Remove a person from a meeting
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: personId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Removed
+
+  /people:
+    get:
+      operationId: listPeople
+      tags: [people]
+      summary: List all people
+      parameters:
+        - name: role
+          in: query
+          schema:
+            type: string
+        - name: search
+          in: query
+          schema:
+            type: string
+      responses:
+        "200":
+          description: List of people
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Person"
+    post:
+      operationId: createPerson
+      tags: [people]
+      summary: Create a person
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PersonInput"
+      responses:
+        "201":
+          description: Created person
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Person"
+
+  /people/{id}:
+    get:
+      operationId: getPerson
+      tags: [people]
+      summary: Get person details
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Person with assigned meetings
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PersonDetail"
+        "404":
+          description: Not found
+    patch:
+      operationId: updatePerson
+      tags: [people]
+      summary: Update a person
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PersonUpdate"
+      responses:
+        "200":
+          description: Updated person
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Person"
+        "404":
+          description: Not found
+    delete:
+      operationId: deletePerson
+      tags: [people]
+      summary: Delete a person
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+
+  /schedule:
+    get:
+      operationId: getSchedule
+      tags: [schedule]
+      summary: Get weekly meeting schedule grouped by day
+      responses:
+        "200":
+          description: Weekly schedule
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/WeeklySchedule"
+
+  /stats:
+    get:
+      operationId: getStats
+      tags: [schedule]
+      summary: Get dashboard statistics
+      responses:
+        "200":
+          description: Stats summary
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Stats"
+
 components:
   schemas:
     HealthStatus:
@@ -34,3 +350,284 @@ components:
       required:
         - status
 
+    Meeting:
+      type: object
+      required: [id, name, day, startTime, endTime, type, format, interaction, language]
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        day:
+          type: string
+          description: "Day of week: Monday, Tuesday, etc."
+        startTime:
+          type: string
+          description: "HH:MM 24-hour format"
+        endTime:
+          type: string
+          description: "HH:MM 24-hour format"
+        location:
+          type: ["string", "null"]
+        link:
+          type: ["string", "null"]
+        type:
+          type: string
+          description: "Open, Closed, Beginners, etc."
+        format:
+          type: string
+          description: "Discussion, Book Study, Speaker, Call-Up"
+        literature:
+          type: ["string", "null"]
+          description: "Big Book, 12 & 12, Grapevine, etc."
+        interaction:
+          type: string
+          description: "In-Person, Online, Hybrid"
+        language:
+          type: string
+          description: "English, Spanish, etc."
+        notes:
+          type: ["string", "null"]
+        createdAt:
+          type: string
+
+    MeetingInput:
+      type: object
+      required: [name, day, startTime, endTime, type, format, interaction, language]
+      properties:
+        name:
+          type: string
+        day:
+          type: string
+        startTime:
+          type: string
+        endTime:
+          type: string
+        location:
+          type: string
+        link:
+          type: string
+        type:
+          type: string
+        format:
+          type: string
+        literature:
+          type: string
+        interaction:
+          type: string
+        language:
+          type: string
+        notes:
+          type: string
+
+    MeetingUpdate:
+      type: object
+      properties:
+        name:
+          type: string
+        day:
+          type: string
+        startTime:
+          type: string
+        endTime:
+          type: string
+        location:
+          type: string
+        link:
+          type: string
+        type:
+          type: string
+        format:
+          type: string
+        literature:
+          type: string
+        interaction:
+          type: string
+        language:
+          type: string
+        notes:
+          type: string
+
+    MeetingDetail:
+      type: object
+      required: [id, name, day, startTime, endTime, type, format, interaction, language, people]
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        day:
+          type: string
+        startTime:
+          type: string
+        endTime:
+          type: string
+        location:
+          type: ["string", "null"]
+        link:
+          type: ["string", "null"]
+        type:
+          type: string
+        format:
+          type: string
+        literature:
+          type: ["string", "null"]
+        interaction:
+          type: string
+        language:
+          type: string
+        notes:
+          type: ["string", "null"]
+        createdAt:
+          type: string
+        people:
+          type: array
+          items:
+            $ref: "#/components/schemas/PersonAssignment"
+
+    Person:
+      type: object
+      required: [id, name, role]
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        role:
+          type: string
+        phone:
+          type: ["string", "null"]
+        email:
+          type: ["string", "null"]
+        cleanDate:
+          type: ["string", "null"]
+        createdAt:
+          type: string
+
+    PersonInput:
+      type: object
+      required: [name, role]
+      properties:
+        name:
+          type: string
+        role:
+          type: string
+        phone:
+          type: string
+        email:
+          type: string
+        cleanDate:
+          type: string
+
+    PersonUpdate:
+      type: object
+      properties:
+        name:
+          type: string
+        role:
+          type: string
+        phone:
+          type: string
+        email:
+          type: string
+        cleanDate:
+          type: string
+
+    PersonDetail:
+      type: object
+      required: [id, name, role, meetings]
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        role:
+          type: string
+        phone:
+          type: ["string", "null"]
+        email:
+          type: ["string", "null"]
+        cleanDate:
+          type: ["string", "null"]
+        createdAt:
+          type: string
+        meetings:
+          type: array
+          items:
+            $ref: "#/components/schemas/Meeting"
+
+    PersonAssignment:
+      type: object
+      required: [id, name, role]
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        role:
+          type: string
+        phone:
+          type: ["string", "null"]
+        email:
+          type: ["string", "null"]
+        assignedRole:
+          type: ["string", "null"]
+
+    AssignmentInput:
+      type: object
+      required: [personId]
+      properties:
+        personId:
+          type: integer
+        assignedRole:
+          type: string
+
+    DaySchedule:
+      type: object
+      required: [day, meetings]
+      properties:
+        day:
+          type: string
+        meetings:
+          type: array
+          items:
+            $ref: "#/components/schemas/MeetingDetail"
+
+    WeeklySchedule:
+      type: object
+      required: [days]
+      properties:
+        days:
+          type: array
+          items:
+            $ref: "#/components/schemas/DaySchedule"
+
+    Stats:
+      type: object
+      required: [totalMeetings, totalPeople, meetingsByDay, meetingsByType, meetingsByInteraction]
+      properties:
+        totalMeetings:
+          type: integer
+        totalPeople:
+          type: integer
+        meetingsByDay:
+          type: array
+          items:
+            $ref: "#/components/schemas/CountByLabel"
+        meetingsByType:
+          type: array
+          items:
+            $ref: "#/components/schemas/CountByLabel"
+        meetingsByInteraction:
+          type: array
+          items:
+            $ref: "#/components/schemas/CountByLabel"
+
+    CountByLabel:
+      type: object
+      required: [label, count]
+      properties:
+        label:
+          type: string
+        count:
+          type: integer
