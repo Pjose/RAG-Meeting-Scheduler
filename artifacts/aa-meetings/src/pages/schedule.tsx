@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link } from "wouter";
-import { Search, Filter, MapPin, Globe, Users, Clock, ChevronDown, X } from "lucide-react";
+import { Search, Filter, MapPin, Globe, Users, Clock, ChevronDown, X, List, LayoutGrid } from "lucide-react";
 import { useGetSchedule, useListMeetings, getGetScheduleQueryKey, getListMeetingsQueryKey } from "@workspace/api-client-react";
 import { PublicLayout } from "@/components/layout";
 import { Badge } from "@/components/ui/badge";
@@ -22,15 +22,15 @@ function interactionIcon(interaction: string) {
 }
 
 function interactionColor(interaction: string) {
-  if (interaction === "Online") return "bg-accent text-accent-foreground";
-  if (interaction === "Hybrid") return "bg-secondary text-secondary-foreground";
-  return "bg-muted text-muted-foreground";
+  if (interaction === "Online") return "bg-accent/20 text-accent-foreground border border-accent/30";
+  if (interaction === "Hybrid") return "bg-secondary text-secondary-foreground border border-secondary-foreground/10";
+  return "bg-muted text-muted-foreground border border-border/50";
 }
 
 function typeColor(type: string) {
-  if (type === "Open") return "border-primary/30 text-primary bg-primary/5";
+  if (type === "Open") return "border-primary/40 text-primary bg-primary/8";
   if (type === "Closed") return "border-muted-foreground/30 text-muted-foreground";
-  if (type === "Beginners") return "border-chart-2/40 text-chart-2 bg-chart-2/5";
+  if (type === "Beginners") return "border-chart-3/40 text-chart-3 bg-chart-3/5";
   return "border-border text-muted-foreground";
 }
 
@@ -42,6 +42,7 @@ export default function Schedule() {
   const [interaction, setInteraction] = useState("");
   const [language, setLanguage] = useState("");
   const [showFilters, setShowFilters] = useState(false);
+  const [viewMode, setViewMode] = useState<"list" | "grid">("list");
 
   const hasFilters = search || day || type || format || interaction || language;
 
@@ -82,65 +83,92 @@ export default function Schedule() {
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               className="pl-9"
-              data-testid="search-input"
             />
           </div>
-          <Button
-            variant="outline"
-            size="default"
-            onClick={() => setShowFilters(!showFilters)}
-            className="gap-2 shrink-0"
-            data-testid="filter-toggle"
-          >
-            <Filter size={14} />
-            Filters
-            {hasFilters && (
-              <span className="ml-0.5 w-5 h-5 rounded-full bg-primary text-primary-foreground text-xs flex items-center justify-center font-medium">
-                {[day, type, format, interaction, language].filter(Boolean).length}
-              </span>
-            )}
-            <ChevronDown size={14} className={`transition-transform ${showFilters ? "rotate-180" : ""}`} />
-          </Button>
-          {hasFilters && (
-            <Button variant="ghost" size="default" onClick={clearFilters} className="gap-1.5 text-muted-foreground shrink-0" data-testid="clear-filters">
-              <X size={14} />
-              Clear
+          <div className="flex gap-2 shrink-0">
+            <Button
+              variant="outline"
+              size="default"
+              onClick={() => setShowFilters(!showFilters)}
+              className="gap-2"
+            >
+              <Filter size={14} />
+              Filters
+              {hasFilters && (
+                <span className="ml-0.5 w-5 h-5 rounded-full bg-primary text-primary-foreground text-xs flex items-center justify-center font-medium">
+                  {[day, type, format, interaction, language].filter(Boolean).length}
+                </span>
+              )}
+              <ChevronDown size={14} className={`transition-transform ${showFilters ? "rotate-180" : ""}`} />
             </Button>
-          )}
+            {hasFilters && (
+              <Button variant="ghost" size="default" onClick={clearFilters} className="gap-1.5 text-muted-foreground">
+                <X size={14} />
+                Clear
+              </Button>
+            )}
+            {/* View toggle — only for unfiltered schedule */}
+            {!hasFilters && (
+              <div className="flex border border-border rounded-md overflow-hidden">
+                <button
+                  onClick={() => setViewMode("list")}
+                  className={`px-3 py-2 flex items-center gap-1.5 text-sm transition-colors ${
+                    viewMode === "list"
+                      ? "bg-primary text-primary-foreground"
+                      : "bg-card text-muted-foreground hover:text-foreground hover:bg-muted"
+                  }`}
+                  title="List view"
+                >
+                  <List size={14} />
+                </button>
+                <button
+                  onClick={() => setViewMode("grid")}
+                  className={`px-3 py-2 flex items-center gap-1.5 text-sm transition-colors border-l border-border ${
+                    viewMode === "grid"
+                      ? "bg-primary text-primary-foreground"
+                      : "bg-card text-muted-foreground hover:text-foreground hover:bg-muted"
+                  }`}
+                  title="Weekly grid view"
+                >
+                  <LayoutGrid size={14} />
+                </button>
+              </div>
+            )}
+          </div>
         </div>
 
         {showFilters && (
           <div className="mt-3 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-2">
             <Select value={day} onValueChange={setDay}>
-              <SelectTrigger data-testid="filter-day"><SelectValue placeholder="Day" /></SelectTrigger>
+              <SelectTrigger><SelectValue placeholder="Day" /></SelectTrigger>
               <SelectContent>
                 <SelectItem value="">All days</SelectItem>
                 {DAYS.map((d) => <SelectItem key={d} value={d}>{d}</SelectItem>)}
               </SelectContent>
             </Select>
             <Select value={type} onValueChange={setType}>
-              <SelectTrigger data-testid="filter-type"><SelectValue placeholder="Type" /></SelectTrigger>
+              <SelectTrigger><SelectValue placeholder="Type" /></SelectTrigger>
               <SelectContent>
                 <SelectItem value="">All types</SelectItem>
                 {TYPES.map((t) => <SelectItem key={t} value={t}>{t}</SelectItem>)}
               </SelectContent>
             </Select>
             <Select value={format} onValueChange={setFormat}>
-              <SelectTrigger data-testid="filter-format"><SelectValue placeholder="Format" /></SelectTrigger>
+              <SelectTrigger><SelectValue placeholder="Format" /></SelectTrigger>
               <SelectContent>
                 <SelectItem value="">All formats</SelectItem>
                 {FORMATS.map((f) => <SelectItem key={f} value={f}>{f}</SelectItem>)}
               </SelectContent>
             </Select>
             <Select value={interaction} onValueChange={setInteraction}>
-              <SelectTrigger data-testid="filter-interaction"><SelectValue placeholder="Mode" /></SelectTrigger>
+              <SelectTrigger><SelectValue placeholder="Mode" /></SelectTrigger>
               <SelectContent>
                 <SelectItem value="">All modes</SelectItem>
                 {INTERACTIONS.map((i) => <SelectItem key={i} value={i}>{i}</SelectItem>)}
               </SelectContent>
             </Select>
             <Select value={language} onValueChange={setLanguage}>
-              <SelectTrigger data-testid="filter-language"><SelectValue placeholder="Language" /></SelectTrigger>
+              <SelectTrigger><SelectValue placeholder="Language" /></SelectTrigger>
               <SelectContent>
                 <SelectItem value="">All languages</SelectItem>
                 {LANGUAGES.map((l) => <SelectItem key={l} value={l}>{l}</SelectItem>)}
@@ -153,43 +181,58 @@ export default function Schedule() {
       {/* Results */}
       <div className="max-w-5xl mx-auto px-4 sm:px-6 pb-16">
         {isLoading ? (
-          <div className="space-y-6">
-            {[1, 2, 3].map((i) => (
-              <div key={i}>
-                <Skeleton className="h-6 w-32 mb-3" />
-                <div className="space-y-2">
-                  {[1, 2].map((j) => <Skeleton key={j} className="h-20 w-full rounded-lg" />)}
-                </div>
-              </div>
-            ))}
-          </div>
+          <LoadingSkeleton grid={viewMode === "grid" && !hasFilters} />
         ) : hasFilters ? (
           <FilteredResults meetings={filteredQuery.data ?? []} />
+        ) : viewMode === "grid" ? (
+          <WeeklyGrid days={scheduleQuery.data?.days ?? []} />
         ) : (
-          <WeeklySchedule days={scheduleQuery.data?.days ?? []} />
+          <WeeklyList days={scheduleQuery.data?.days ?? []} />
         )}
       </div>
     </PublicLayout>
   );
 }
 
-function WeeklySchedule({ days }: { days: Array<{ day: string; meetings: any[] }> }) {
-  if (days.length === 0) {
+function LoadingSkeleton({ grid }: { grid: boolean }) {
+  if (grid) {
     return (
-      <div className="text-center py-20 text-muted-foreground">
-        <Calendar />
-        <p className="mt-4 font-medium text-foreground">No meetings scheduled yet</p>
-        <p className="text-sm mt-1">Check back later or contact your group</p>
+      <div className="grid grid-cols-7 gap-2">
+        {DAYS.map((d) => (
+          <div key={d}>
+            <Skeleton className="h-5 w-full mb-2" />
+            <Skeleton className="h-24 w-full rounded-lg" />
+          </div>
+        ))}
       </div>
     );
   }
   return (
+    <div className="space-y-6">
+      {[1, 2, 3].map((i) => (
+        <div key={i}>
+          <Skeleton className="h-6 w-32 mb-3" />
+          <div className="space-y-2">
+            {[1, 2].map((j) => <Skeleton key={j} className="h-20 w-full rounded-lg" />)}
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+/* ── LIST VIEW ── */
+function WeeklyList({ days }: { days: Array<{ day: string; meetings: any[] }> }) {
+  if (days.length === 0) return <EmptyState />;
+  return (
     <div className="space-y-8">
       {days.map(({ day, meetings }) => (
-        <section key={day} data-testid={`day-section-${day}`}>
+        <section key={day}>
           <div className="flex items-center gap-3 mb-3">
             <h2 className="font-semibold text-base text-foreground">{day}</h2>
-            <span className="text-xs text-muted-foreground bg-muted px-2 py-0.5 rounded-full">{meetings.length} meeting{meetings.length !== 1 ? "s" : ""}</span>
+            <span className="text-xs text-muted-foreground bg-muted px-2 py-0.5 rounded-full">
+              {meetings.length} meeting{meetings.length !== 1 ? "s" : ""}
+            </span>
           </div>
           <div className="space-y-2">
             {meetings.map((m) => <MeetingCard key={m.id} meeting={m} />)}
@@ -200,6 +243,79 @@ function WeeklySchedule({ days }: { days: Array<{ day: string; meetings: any[] }
   );
 }
 
+/* ── GRID VIEW ── */
+function WeeklyGrid({ days }: { days: Array<{ day: string; meetings: any[] }> }) {
+  if (days.length === 0) return <EmptyState />;
+
+  // Index by day name for easy lookup
+  const byDay: Record<string, any[]> = {};
+  for (const { day, meetings } of days) byDay[day] = meetings;
+
+  return (
+    <div className="overflow-x-auto -mx-4 sm:-mx-6 px-4 sm:px-6">
+      <div className="grid min-w-[640px]" style={{ gridTemplateColumns: `repeat(${DAYS.length}, minmax(0, 1fr))`, gap: "6px" }}>
+        {/* Day headers */}
+        {DAYS.map((d) => {
+          const count = (byDay[d] ?? []).length;
+          return (
+            <div key={d} className="text-center pb-1.5 border-b border-primary/20 mb-1">
+              <p className="text-xs font-semibold text-foreground uppercase tracking-wide">{d.slice(0, 3)}</p>
+              {count > 0 && (
+                <span className="text-[10px] text-muted-foreground">{count}</span>
+              )}
+            </div>
+          );
+        })}
+
+        {/* Meeting cells */}
+        {DAYS.map((d) => {
+          const meetings = byDay[d] ?? [];
+          return (
+            <div key={d} className="space-y-1.5 min-h-[80px]">
+              {meetings.length === 0 ? (
+                <div className="h-full min-h-[60px] rounded-md border border-dashed border-border/50 flex items-center justify-center">
+                  <span className="text-[10px] text-muted-foreground/50">—</span>
+                </div>
+              ) : (
+                meetings.map((m) => <GridMeetingCard key={m.id} meeting={m} />)
+              )}
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+function GridMeetingCard({ meeting }: { meeting: any }) {
+  return (
+    <Link
+      href={`/meetings/${meeting.id}`}
+      className="block bg-card border border-card-border rounded-md p-1.5 hover:border-primary/50 hover:shadow-sm transition-all group text-left"
+    >
+      <p className="text-[11px] font-semibold text-foreground group-hover:text-primary transition-colors leading-tight line-clamp-2 mb-1">
+        {meeting.name}
+      </p>
+      <div className="flex items-center gap-1 text-[10px] text-muted-foreground">
+        <Clock size={9} className="shrink-0" />
+        <span className="truncate">{meeting.startTime}</span>
+      </div>
+      <div className="flex items-center gap-1 mt-0.5 flex-wrap">
+        <span className={`inline-flex items-center gap-0.5 text-[10px] px-1 py-px rounded ${typeColor(meeting.type)}`}>
+          {meeting.type}
+        </span>
+      </div>
+      {meeting.interaction && (
+        <div className="flex items-center gap-0.5 mt-0.5 text-[10px] text-muted-foreground">
+          {interactionIcon(meeting.interaction)}
+          <span className="truncate">{meeting.interaction}</span>
+        </div>
+      )}
+    </Link>
+  );
+}
+
+/* ── FILTERED RESULTS ── */
 function FilteredResults({ meetings }: { meetings: any[] }) {
   if (meetings.length === 0) {
     return (
@@ -219,12 +335,12 @@ function FilteredResults({ meetings }: { meetings: any[] }) {
   );
 }
 
+/* ── SHARED CARD ── */
 function MeetingCard({ meeting }: { meeting: any }) {
   return (
     <Link
       href={`/meetings/${meeting.id}`}
       className="block bg-card border border-card-border rounded-lg p-4 hover:border-primary/40 hover:shadow-sm transition-all group"
-      data-testid={`meeting-card-${meeting.id}`}
     >
       <div className="flex items-start justify-between gap-4">
         <div className="min-w-0 flex-1">
@@ -257,10 +373,17 @@ function MeetingCard({ meeting }: { meeting: any }) {
   );
 }
 
-function Calendar() {
+function EmptyState() {
   return (
-    <div className="w-12 h-12 mx-auto mb-2 rounded-xl bg-muted flex items-center justify-center text-muted-foreground">
-      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+    <div className="text-center py-20 text-muted-foreground">
+      <div className="w-12 h-12 mx-auto mb-3 rounded-xl bg-muted flex items-center justify-center">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+          <rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/>
+          <line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>
+        </svg>
+      </div>
+      <p className="font-medium text-foreground">No meetings scheduled yet</p>
+      <p className="text-sm mt-1">Check back later or contact your group</p>
     </div>
   );
 }
