@@ -139,38 +139,38 @@ export default function Schedule() {
 
         {showFilters && (
           <div className="mt-3 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-2">
-            <Select value={day} onValueChange={setDay}>
+            <Select value={day || "all"} onValueChange={(v) => setDay(v === "all" ? "" : v)}>
               <SelectTrigger><SelectValue placeholder="Day" /></SelectTrigger>
               <SelectContent>
-                <SelectItem value="">All days</SelectItem>
+                <SelectItem value="all">All days</SelectItem>
                 {DAYS.map((d) => <SelectItem key={d} value={d}>{d}</SelectItem>)}
               </SelectContent>
             </Select>
-            <Select value={type} onValueChange={setType}>
+            <Select value={type || "all"} onValueChange={(v) => setType(v === "all" ? "" : v)}>
               <SelectTrigger><SelectValue placeholder="Type" /></SelectTrigger>
               <SelectContent>
-                <SelectItem value="">All types</SelectItem>
+                <SelectItem value="all">All types</SelectItem>
                 {TYPES.map((t) => <SelectItem key={t} value={t}>{t}</SelectItem>)}
               </SelectContent>
             </Select>
-            <Select value={format} onValueChange={setFormat}>
+            <Select value={format || "all"} onValueChange={(v) => setFormat(v === "all" ? "" : v)}>
               <SelectTrigger><SelectValue placeholder="Format" /></SelectTrigger>
               <SelectContent>
-                <SelectItem value="">All formats</SelectItem>
+                <SelectItem value="all">All formats</SelectItem>
                 {FORMATS.map((f) => <SelectItem key={f} value={f}>{f}</SelectItem>)}
               </SelectContent>
             </Select>
-            <Select value={interaction} onValueChange={setInteraction}>
+            <Select value={interaction || "all"} onValueChange={(v) => setInteraction(v === "all" ? "" : v)}>
               <SelectTrigger><SelectValue placeholder="Mode" /></SelectTrigger>
               <SelectContent>
-                <SelectItem value="">All modes</SelectItem>
+                <SelectItem value="all">All modes</SelectItem>
                 {INTERACTIONS.map((i) => <SelectItem key={i} value={i}>{i}</SelectItem>)}
               </SelectContent>
             </Select>
-            <Select value={language} onValueChange={setLanguage}>
+            <Select value={language || "all"} onValueChange={(v) => setLanguage(v === "all" ? "" : v)}>
               <SelectTrigger><SelectValue placeholder="Language" /></SelectTrigger>
               <SelectContent>
-                <SelectItem value="">All languages</SelectItem>
+                <SelectItem value="all">All languages</SelectItem>
                 {LANGUAGES.map((l) => <SelectItem key={l} value={l}>{l}</SelectItem>)}
               </SelectContent>
             </Select>

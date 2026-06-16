@@ -1,5 +1,5 @@
 import { Link, useLocation } from "wouter";
-import { Calendar, Users, LayoutDashboard, Menu, X, ChevronRight } from "lucide-react";
+import { Calendar, Users, LayoutDashboard, Menu, X, ChevronRight, Printer } from "lucide-react";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
 
@@ -41,6 +41,11 @@ const adminNav = [
   { href: "/admin/people", label: "People", icon: Users },
 ];
 
+const printNav = [
+  { href: "/admin/print/schedule", label: "Weekly Schedule", icon: Printer },
+  { href: "/admin/print/contacts", label: "Contact List", icon: Printer },
+];
+
 export function AdminLayout({ children }: { children: React.ReactNode }) {
   const [location] = useLocation();
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -64,7 +69,7 @@ export function AdminLayout({ children }: { children: React.ReactNode }) {
             <p className="text-xs text-sidebar-foreground/60">Meeting Directory</p>
           </div>
         </div>
-        <nav className="flex-1 py-4 px-3 space-y-0.5">
+        <nav className="flex-1 py-4 px-3 space-y-0.5 overflow-y-auto">
           {adminNav.map(({ href, label, icon: Icon }) => {
             const active = location === href || (href !== "/admin" && location.startsWith(href));
             return (
@@ -78,6 +83,29 @@ export function AdminLayout({ children }: { children: React.ReactNode }) {
                     : "text-sidebar-foreground/70 hover:bg-sidebar-accent/60 hover:text-sidebar-foreground"
                 )}
                 data-testid={`nav-${label.toLowerCase()}`}
+                onClick={() => setSidebarOpen(false)}
+              >
+                <Icon size={16} strokeWidth={1.8} />
+                {label}
+              </Link>
+            );
+          })}
+
+          <div className="pt-3 pb-1 px-3">
+            <p className="text-[10px] font-semibold uppercase tracking-wider text-sidebar-foreground/40">Print</p>
+          </div>
+          {printNav.map(({ href, label, icon: Icon }) => {
+            const active = location === href;
+            return (
+              <Link
+                key={href}
+                href={href}
+                className={cn(
+                  "flex items-center gap-3 px-3 py-2 rounded text-sm font-medium transition-colors",
+                  active
+                    ? "bg-sidebar-accent text-sidebar-foreground"
+                    : "text-sidebar-foreground/70 hover:bg-sidebar-accent/60 hover:text-sidebar-foreground"
+                )}
                 onClick={() => setSidebarOpen(false)}
               >
                 <Icon size={16} strokeWidth={1.8} />
