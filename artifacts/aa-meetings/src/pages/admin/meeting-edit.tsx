@@ -280,10 +280,13 @@ export default function AdminMeetingEdit() {
               <FormField control={form.control} name="literature" render={({ field }) => (
                 <FormItem>
                   <FormLabel>Literature <span className="text-muted-foreground font-normal">(optional)</span></FormLabel>
-                  <Select value={field.value} onValueChange={field.onChange}>
+                  <Select
+                    value={field.value || "__none__"}
+                    onValueChange={(v) => field.onChange(v === "__none__" ? "" : v)}
+                  >
                     <FormControl><SelectTrigger data-testid="select-literature"><SelectValue placeholder="Select literature" /></SelectTrigger></FormControl>
                     <SelectContent>
-                      <SelectItem value="">None</SelectItem>
+                      <SelectItem value="__none__">None</SelectItem>
                       {LITERATURE.map((l) => <SelectItem key={l} value={l}>{l}</SelectItem>)}
                     </SelectContent>
                   </Select>
@@ -354,7 +357,7 @@ export default function AdminMeetingEdit() {
                   </SelectTrigger>
                   <SelectContent>
                     {availablePeople.length === 0 ? (
-                      <SelectItem value="" disabled>No available people</SelectItem>
+                      <div className="px-3 py-2 text-sm text-muted-foreground italic">No available people</div>
                     ) : (
                       availablePeople.map((p) => (
                         <SelectItem key={p.id} value={String(p.id)}>{p.name} — {p.role}</SelectItem>
@@ -362,12 +365,15 @@ export default function AdminMeetingEdit() {
                     )}
                   </SelectContent>
                 </Select>
-                <Select value={selectedAssignedRole} onValueChange={setSelectedAssignedRole}>
+                <Select
+                  value={selectedAssignedRole || "__default__"}
+                  onValueChange={(v) => setSelectedAssignedRole(v === "__default__" ? "" : v)}
+                >
                   <SelectTrigger className="flex-1 sm:w-44" data-testid="select-assigned-role">
                     <SelectValue placeholder="Override role..." />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">Keep default role</SelectItem>
+                    <SelectItem value="__default__">Keep default role</SelectItem>
                     {ROLES.map((r) => <SelectItem key={r} value={r}>{r}</SelectItem>)}
                   </SelectContent>
                 </Select>
