@@ -125,7 +125,11 @@ export default function PrintSchedule() {
                           key={day}
                           className="border border-border px-1.5 py-1 align-top"
                         >
-                          {meetings.map((m) => (
+                          {meetings.map((m) => {
+                            const chairs = (m.people ?? []).filter(
+                              (p: any) => (p.assignedRole || p.role) === "Chairperson"
+                            );
+                            return (
                             <div
                               key={m.id}
                               className="mb-1 last:mb-0 p-1 rounded bg-primary/8 print:bg-gray-50 border border-primary/20 print:border-gray-300"
@@ -134,12 +138,17 @@ export default function PrintSchedule() {
                               <p className="text-muted-foreground mt-0.5">
                                 {m.startTime}–{m.endTime}
                               </p>
-                              {m.location && (
-                                <p className="text-muted-foreground truncate">{m.location}</p>
-                              )}
                               <p className="text-muted-foreground">{m.type} · {m.format}</p>
+                              {chairs.length > 0 && (
+                                <p className="mt-0.5">
+                                  <span className="font-bold text-foreground">
+                                    {chairs.map((p: any) => p.name).join(", ")}
+                                  </span>
+                                </p>
+                              )}
                             </div>
-                          ))}
+                            );
+                          })}
                         </td>
                       );
                     })}

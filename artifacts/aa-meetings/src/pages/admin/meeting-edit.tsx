@@ -27,11 +27,25 @@ import { Separator } from "@/components/ui/separator";
 import { useToast } from "@/hooks/use-toast";
 
 const DAYS = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
-const TYPES = ["Open", "Closed", "Beginners", "Step Study", "Big Book Study", "Speaker"];
-const FORMATS = ["Discussion", "Book Study", "Speaker", "Call-Up"];
+const TYPES = ["Open", "Closed", "Beginner"];
+const FORMATS = ["Book Study", "Call-Up", "Discussion", "Step Speaker", "Step Study", "Story Speaker"];
 const INTERACTIONS = ["In-Person", "Online", "Hybrid"];
 const LANGUAGES = ["English", "Spanish", "French", "Portuguese", "Other"];
-const LITERATURE = ["Big Book", "12 & 12", "Grapevine", "Daily Reflections", "None"];
+const LITERATURE = [
+  "12 & 12",
+  "A.A. Comes Of Age",
+  "A.A. In Prison: Inmate To Inmate",
+  "As Bill Sees It",
+  "Big Book",
+  "Came To Believe...",
+  "Daily Reflections",
+  "Dr. Bob And The Good Oldtimers",
+  "Experience, Strength And Hope",
+  "Grapevine",
+  "Living Sober",
+  "Our Great Responsibility",
+  "Pass It On",
+];
 const ROLES = ["Chairperson", "Co-Chairperson", "Secretary", "Treasurer", "GSR", "Intergroup", "PI", "H&I", "Communication", "Unity", "Meeting Co-Chair", "Member", "Alternate GSR", "Alternate Treasurer", "Alternate Intergroup", "Assistant Communication"];
 
 const formSchema = z.object({
