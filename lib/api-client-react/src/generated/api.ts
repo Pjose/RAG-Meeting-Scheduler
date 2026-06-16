@@ -22,6 +22,7 @@ import type {
 import type {
   AssignmentInput,
   HealthStatus,
+  ListHiMeetingsParams,
   ListMeetingsParams,
   ListPeopleParams,
   Meeting,
@@ -1238,6 +1239,678 @@ export function useGetStats<TData = Awaited<ReturnType<typeof getStats>>, TError
  ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
 
   const queryOptions = getGetStatsQueryOptions(options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+
+
+
+
+
+
+export const getListHiMeetingsUrl = (params?: ListHiMeetingsParams,) => {
+  const normalizedParams = new URLSearchParams();
+
+  Object.entries(params || {}).forEach(([key, value]) => {
+
+    if (value !== undefined) {
+      normalizedParams.append(key, value === null ? 'null' : value.toString())
+    }
+  });
+
+  const stringifiedParams = normalizedParams.toString();
+
+  return stringifiedParams.length > 0 ? `/api/hi-meetings?${stringifiedParams}` : `/api/hi-meetings`
+}
+
+/**
+ * @summary List all H&I meetings
+ */
+export const listHiMeetings = async (params?: ListHiMeetingsParams, options?: RequestInit): Promise<Meeting[]> => {
+
+  return customFetch<Meeting[]>(getListHiMeetingsUrl(params),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getListHiMeetingsQueryKey = (params?: ListHiMeetingsParams,) => {
+    return [
+    `/api/hi-meetings`, ...(params ? [params] : [])
+    ] as const;
+    }
+
+
+export const getListHiMeetingsQueryOptions = <TData = Awaited<ReturnType<typeof listHiMeetings>>, TError = ErrorType<unknown>>(params?: ListHiMeetingsParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listHiMeetings>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getListHiMeetingsQueryKey(params);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listHiMeetings>>> = ({ signal }) => listHiMeetings(params, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listHiMeetings>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type ListHiMeetingsQueryResult = NonNullable<Awaited<ReturnType<typeof listHiMeetings>>>
+export type ListHiMeetingsQueryError = ErrorType<unknown>
+
+
+/**
+ * @summary List all H&I meetings
+ */
+
+export function useListHiMeetings<TData = Awaited<ReturnType<typeof listHiMeetings>>, TError = ErrorType<unknown>>(
+ params?: ListHiMeetingsParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listHiMeetings>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getListHiMeetingsQueryOptions(params,options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+
+
+
+
+
+
+export const getCreateHiMeetingUrl = () => {
+
+
+
+
+  return `/api/hi-meetings`
+}
+
+/**
+ * @summary Create an H&I meeting
+ */
+export const createHiMeeting = async (meetingInput: MeetingInput, options?: RequestInit): Promise<Meeting> => {
+
+  return customFetch<Meeting>(getCreateHiMeetingUrl(),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(
+      meetingInput,)
+  }
+);}
+
+
+
+
+export const getCreateHiMeetingMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createHiMeeting>>, TError,{data: BodyType<MeetingInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof createHiMeeting>>, TError,{data: BodyType<MeetingInput>}, TContext> => {
+
+const mutationKey = ['createHiMeeting'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof createHiMeeting>>, {data: BodyType<MeetingInput>}> = (props) => {
+          const {data} = props ?? {};
+
+          return  createHiMeeting(data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type CreateHiMeetingMutationResult = NonNullable<Awaited<ReturnType<typeof createHiMeeting>>>
+    export type CreateHiMeetingMutationBody = BodyType<MeetingInput>
+    export type CreateHiMeetingMutationError = ErrorType<unknown>
+
+    /**
+ * @summary Create an H&I meeting
+ */
+export const useCreateHiMeeting = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createHiMeeting>>, TError,{data: BodyType<MeetingInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof createHiMeeting>>,
+        TError,
+        {data: BodyType<MeetingInput>},
+        TContext
+      > => {
+      return useMutation(getCreateHiMeetingMutationOptions(options));
+    }
+
+export const getGetHiMeetingUrl = (id: number,) => {
+
+
+
+
+  return `/api/hi-meetings/${id}`
+}
+
+/**
+ * @summary Get H&I meeting details
+ */
+export const getHiMeeting = async (id: number, options?: RequestInit): Promise<MeetingDetail> => {
+
+  return customFetch<MeetingDetail>(getGetHiMeetingUrl(id),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getGetHiMeetingQueryKey = (id: number,) => {
+    return [
+    `/api/hi-meetings/${id}`
+    ] as const;
+    }
+
+
+export const getGetHiMeetingQueryOptions = <TData = Awaited<ReturnType<typeof getHiMeeting>>, TError = ErrorType<void>>(id: number, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getHiMeeting>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetHiMeetingQueryKey(id);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getHiMeeting>>> = ({ signal }) => getHiMeeting(id, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, enabled: !!(id), ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getHiMeeting>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type GetHiMeetingQueryResult = NonNullable<Awaited<ReturnType<typeof getHiMeeting>>>
+export type GetHiMeetingQueryError = ErrorType<void>
+
+
+/**
+ * @summary Get H&I meeting details
+ */
+
+export function useGetHiMeeting<TData = Awaited<ReturnType<typeof getHiMeeting>>, TError = ErrorType<void>>(
+ id: number, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getHiMeeting>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getGetHiMeetingQueryOptions(id,options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+
+
+
+
+
+
+export const getUpdateHiMeetingUrl = (id: number,) => {
+
+
+
+
+  return `/api/hi-meetings/${id}`
+}
+
+/**
+ * @summary Update an H&I meeting
+ */
+export const updateHiMeeting = async (id: number,
+    meetingUpdate: MeetingUpdate, options?: RequestInit): Promise<Meeting> => {
+
+  return customFetch<Meeting>(getUpdateHiMeetingUrl(id),
+  {
+    ...options,
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(
+      meetingUpdate,)
+  }
+);}
+
+
+
+
+export const getUpdateHiMeetingMutationOptions = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateHiMeeting>>, TError,{id: number;data: BodyType<MeetingUpdate>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof updateHiMeeting>>, TError,{id: number;data: BodyType<MeetingUpdate>}, TContext> => {
+
+const mutationKey = ['updateHiMeeting'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof updateHiMeeting>>, {id: number;data: BodyType<MeetingUpdate>}> = (props) => {
+          const {id,data} = props ?? {};
+
+          return  updateHiMeeting(id,data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type UpdateHiMeetingMutationResult = NonNullable<Awaited<ReturnType<typeof updateHiMeeting>>>
+    export type UpdateHiMeetingMutationBody = BodyType<MeetingUpdate>
+    export type UpdateHiMeetingMutationError = ErrorType<void>
+
+    /**
+ * @summary Update an H&I meeting
+ */
+export const useUpdateHiMeeting = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateHiMeeting>>, TError,{id: number;data: BodyType<MeetingUpdate>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof updateHiMeeting>>,
+        TError,
+        {id: number;data: BodyType<MeetingUpdate>},
+        TContext
+      > => {
+      return useMutation(getUpdateHiMeetingMutationOptions(options));
+    }
+
+export const getDeleteHiMeetingUrl = (id: number,) => {
+
+
+
+
+  return `/api/hi-meetings/${id}`
+}
+
+/**
+ * @summary Delete an H&I meeting
+ */
+export const deleteHiMeeting = async (id: number, options?: RequestInit): Promise<void> => {
+
+  return customFetch<void>(getDeleteHiMeetingUrl(id),
+  {
+    ...options,
+    method: 'DELETE'
+
+
+  }
+);}
+
+
+
+
+export const getDeleteHiMeetingMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteHiMeeting>>, TError,{id: number}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof deleteHiMeeting>>, TError,{id: number}, TContext> => {
+
+const mutationKey = ['deleteHiMeeting'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof deleteHiMeeting>>, {id: number}> = (props) => {
+          const {id} = props ?? {};
+
+          return  deleteHiMeeting(id,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type DeleteHiMeetingMutationResult = NonNullable<Awaited<ReturnType<typeof deleteHiMeeting>>>
+
+    export type DeleteHiMeetingMutationError = ErrorType<unknown>
+
+    /**
+ * @summary Delete an H&I meeting
+ */
+export const useDeleteHiMeeting = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteHiMeeting>>, TError,{id: number}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof deleteHiMeeting>>,
+        TError,
+        {id: number},
+        TContext
+      > => {
+      return useMutation(getDeleteHiMeetingMutationOptions(options));
+    }
+
+export const getGetHiMeetingPeopleUrl = (id: number,) => {
+
+
+
+
+  return `/api/hi-meetings/${id}/people`
+}
+
+/**
+ * @summary Get people assigned to an H&I meeting
+ */
+export const getHiMeetingPeople = async (id: number, options?: RequestInit): Promise<PersonAssignment[]> => {
+
+  return customFetch<PersonAssignment[]>(getGetHiMeetingPeopleUrl(id),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getGetHiMeetingPeopleQueryKey = (id: number,) => {
+    return [
+    `/api/hi-meetings/${id}/people`
+    ] as const;
+    }
+
+
+export const getGetHiMeetingPeopleQueryOptions = <TData = Awaited<ReturnType<typeof getHiMeetingPeople>>, TError = ErrorType<unknown>>(id: number, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getHiMeetingPeople>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetHiMeetingPeopleQueryKey(id);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getHiMeetingPeople>>> = ({ signal }) => getHiMeetingPeople(id, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, enabled: !!(id), ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getHiMeetingPeople>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type GetHiMeetingPeopleQueryResult = NonNullable<Awaited<ReturnType<typeof getHiMeetingPeople>>>
+export type GetHiMeetingPeopleQueryError = ErrorType<unknown>
+
+
+/**
+ * @summary Get people assigned to an H&I meeting
+ */
+
+export function useGetHiMeetingPeople<TData = Awaited<ReturnType<typeof getHiMeetingPeople>>, TError = ErrorType<unknown>>(
+ id: number, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getHiMeetingPeople>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getGetHiMeetingPeopleQueryOptions(id,options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+
+
+
+
+
+
+export const getAssignPersonToHiMeetingUrl = (id: number,) => {
+
+
+
+
+  return `/api/hi-meetings/${id}/people`
+}
+
+/**
+ * @summary Assign a person to an H&I meeting
+ */
+export const assignPersonToHiMeeting = async (id: number,
+    assignmentInput: AssignmentInput, options?: RequestInit): Promise<PersonAssignment> => {
+
+  return customFetch<PersonAssignment>(getAssignPersonToHiMeetingUrl(id),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(
+      assignmentInput,)
+  }
+);}
+
+
+
+
+export const getAssignPersonToHiMeetingMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof assignPersonToHiMeeting>>, TError,{id: number;data: BodyType<AssignmentInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof assignPersonToHiMeeting>>, TError,{id: number;data: BodyType<AssignmentInput>}, TContext> => {
+
+const mutationKey = ['assignPersonToHiMeeting'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof assignPersonToHiMeeting>>, {id: number;data: BodyType<AssignmentInput>}> = (props) => {
+          const {id,data} = props ?? {};
+
+          return  assignPersonToHiMeeting(id,data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type AssignPersonToHiMeetingMutationResult = NonNullable<Awaited<ReturnType<typeof assignPersonToHiMeeting>>>
+    export type AssignPersonToHiMeetingMutationBody = BodyType<AssignmentInput>
+    export type AssignPersonToHiMeetingMutationError = ErrorType<unknown>
+
+    /**
+ * @summary Assign a person to an H&I meeting
+ */
+export const useAssignPersonToHiMeeting = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof assignPersonToHiMeeting>>, TError,{id: number;data: BodyType<AssignmentInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof assignPersonToHiMeeting>>,
+        TError,
+        {id: number;data: BodyType<AssignmentInput>},
+        TContext
+      > => {
+      return useMutation(getAssignPersonToHiMeetingMutationOptions(options));
+    }
+
+export const getRemovePersonFromHiMeetingUrl = (id: number,
+    personId: number,) => {
+
+
+
+
+  return `/api/hi-meetings/${id}/people/${personId}`
+}
+
+/**
+ * @summary Remove a person from an H&I meeting
+ */
+export const removePersonFromHiMeeting = async (id: number,
+    personId: number, options?: RequestInit): Promise<void> => {
+
+  return customFetch<void>(getRemovePersonFromHiMeetingUrl(id,personId),
+  {
+    ...options,
+    method: 'DELETE'
+
+
+  }
+);}
+
+
+
+
+export const getRemovePersonFromHiMeetingMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof removePersonFromHiMeeting>>, TError,{id: number;personId: number}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof removePersonFromHiMeeting>>, TError,{id: number;personId: number}, TContext> => {
+
+const mutationKey = ['removePersonFromHiMeeting'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof removePersonFromHiMeeting>>, {id: number;personId: number}> = (props) => {
+          const {id,personId} = props ?? {};
+
+          return  removePersonFromHiMeeting(id,personId,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type RemovePersonFromHiMeetingMutationResult = NonNullable<Awaited<ReturnType<typeof removePersonFromHiMeeting>>>
+
+    export type RemovePersonFromHiMeetingMutationError = ErrorType<unknown>
+
+    /**
+ * @summary Remove a person from an H&I meeting
+ */
+export const useRemovePersonFromHiMeeting = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof removePersonFromHiMeeting>>, TError,{id: number;personId: number}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof removePersonFromHiMeeting>>,
+        TError,
+        {id: number;personId: number},
+        TContext
+      > => {
+      return useMutation(getRemovePersonFromHiMeetingMutationOptions(options));
+    }
+
+export const getGetHiScheduleUrl = () => {
+
+
+
+
+  return `/api/hi-schedule`
+}
+
+/**
+ * @summary Get weekly H&I meeting schedule grouped by day
+ */
+export const getHiSchedule = async ( options?: RequestInit): Promise<WeeklySchedule> => {
+
+  return customFetch<WeeklySchedule>(getGetHiScheduleUrl(),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getGetHiScheduleQueryKey = () => {
+    return [
+    `/api/hi-schedule`
+    ] as const;
+    }
+
+
+export const getGetHiScheduleQueryOptions = <TData = Awaited<ReturnType<typeof getHiSchedule>>, TError = ErrorType<unknown>>( options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getHiSchedule>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetHiScheduleQueryKey();
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getHiSchedule>>> = ({ signal }) => getHiSchedule({ signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getHiSchedule>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type GetHiScheduleQueryResult = NonNullable<Awaited<ReturnType<typeof getHiSchedule>>>
+export type GetHiScheduleQueryError = ErrorType<unknown>
+
+
+/**
+ * @summary Get weekly H&I meeting schedule grouped by day
+ */
+
+export function useGetHiSchedule<TData = Awaited<ReturnType<typeof getHiSchedule>>, TError = ErrorType<unknown>>(
+  options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getHiSchedule>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getGetHiScheduleQueryOptions(options)
 
   const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
 

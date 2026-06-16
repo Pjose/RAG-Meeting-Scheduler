@@ -343,3 +343,208 @@ export const GetStatsResponse = zod.object({
 })
 
 
+/**
+ * @summary List all H&I meetings
+ */
+export const ListHiMeetingsQueryParams = zod.object({
+  "day": zod.coerce.string().optional(),
+  "type": zod.coerce.string().optional(),
+  "format": zod.coerce.string().optional(),
+  "interaction": zod.coerce.string().optional(),
+  "language": zod.coerce.string().optional(),
+  "search": zod.coerce.string().optional()
+})
+
+export const ListHiMeetingsResponseItem = zod.object({
+  "id": zod.number(),
+  "name": zod.string(),
+  "day": zod.string().describe('Day of week: Monday, Tuesday, etc.'),
+  "startTime": zod.string().describe('HH:MM 24-hour format'),
+  "endTime": zod.string().describe('HH:MM 24-hour format'),
+  "location": zod.string().nullish(),
+  "link": zod.string().nullish(),
+  "type": zod.string().describe('Open, Closed, Beginners, etc.'),
+  "format": zod.string().describe('Discussion, Book Study, Speaker, Call-Up'),
+  "literature": zod.string().nullish().describe('Big Book, 12 & 12, Grapevine, etc.'),
+  "interaction": zod.string().describe('In-Person, Online, Hybrid'),
+  "language": zod.string().describe('English, Spanish, etc.'),
+  "notes": zod.string().nullish(),
+  "createdAt": zod.string().optional()
+})
+export const ListHiMeetingsResponse = zod.array(ListHiMeetingsResponseItem)
+
+
+/**
+ * @summary Create an H&I meeting
+ */
+export const CreateHiMeetingBody = zod.object({
+  "name": zod.string(),
+  "day": zod.string(),
+  "startTime": zod.string(),
+  "endTime": zod.string(),
+  "location": zod.string().optional(),
+  "link": zod.string().optional(),
+  "type": zod.string(),
+  "format": zod.string(),
+  "literature": zod.string().optional(),
+  "interaction": zod.string(),
+  "language": zod.string(),
+  "notes": zod.string().optional()
+})
+
+
+/**
+ * @summary Get H&I meeting details
+ */
+export const GetHiMeetingParams = zod.object({
+  "id": zod.coerce.number()
+})
+
+export const GetHiMeetingResponse = zod.object({
+  "id": zod.number(),
+  "name": zod.string(),
+  "day": zod.string(),
+  "startTime": zod.string(),
+  "endTime": zod.string(),
+  "location": zod.string().nullish(),
+  "link": zod.string().nullish(),
+  "type": zod.string(),
+  "format": zod.string(),
+  "literature": zod.string().nullish(),
+  "interaction": zod.string(),
+  "language": zod.string(),
+  "notes": zod.string().nullish(),
+  "createdAt": zod.string().optional(),
+  "people": zod.array(zod.object({
+  "id": zod.number(),
+  "name": zod.string(),
+  "role": zod.string(),
+  "phone": zod.string().nullish(),
+  "email": zod.string().nullish(),
+  "assignedRole": zod.string().nullish()
+}))
+})
+
+
+/**
+ * @summary Update an H&I meeting
+ */
+export const UpdateHiMeetingParams = zod.object({
+  "id": zod.coerce.number()
+})
+
+export const UpdateHiMeetingBody = zod.object({
+  "name": zod.string().optional(),
+  "day": zod.string().optional(),
+  "startTime": zod.string().optional(),
+  "endTime": zod.string().optional(),
+  "location": zod.string().optional(),
+  "link": zod.string().optional(),
+  "type": zod.string().optional(),
+  "format": zod.string().optional(),
+  "literature": zod.string().optional(),
+  "interaction": zod.string().optional(),
+  "language": zod.string().optional(),
+  "notes": zod.string().optional()
+})
+
+export const UpdateHiMeetingResponse = zod.object({
+  "id": zod.number(),
+  "name": zod.string(),
+  "day": zod.string().describe('Day of week: Monday, Tuesday, etc.'),
+  "startTime": zod.string().describe('HH:MM 24-hour format'),
+  "endTime": zod.string().describe('HH:MM 24-hour format'),
+  "location": zod.string().nullish(),
+  "link": zod.string().nullish(),
+  "type": zod.string().describe('Open, Closed, Beginners, etc.'),
+  "format": zod.string().describe('Discussion, Book Study, Speaker, Call-Up'),
+  "literature": zod.string().nullish().describe('Big Book, 12 & 12, Grapevine, etc.'),
+  "interaction": zod.string().describe('In-Person, Online, Hybrid'),
+  "language": zod.string().describe('English, Spanish, etc.'),
+  "notes": zod.string().nullish(),
+  "createdAt": zod.string().optional()
+})
+
+
+/**
+ * @summary Delete an H&I meeting
+ */
+export const DeleteHiMeetingParams = zod.object({
+  "id": zod.coerce.number()
+})
+
+
+/**
+ * @summary Get people assigned to an H&I meeting
+ */
+export const GetHiMeetingPeopleParams = zod.object({
+  "id": zod.coerce.number()
+})
+
+export const GetHiMeetingPeopleResponseItem = zod.object({
+  "id": zod.number(),
+  "name": zod.string(),
+  "role": zod.string(),
+  "phone": zod.string().nullish(),
+  "email": zod.string().nullish(),
+  "assignedRole": zod.string().nullish()
+})
+export const GetHiMeetingPeopleResponse = zod.array(GetHiMeetingPeopleResponseItem)
+
+
+/**
+ * @summary Assign a person to an H&I meeting
+ */
+export const AssignPersonToHiMeetingParams = zod.object({
+  "id": zod.coerce.number()
+})
+
+export const AssignPersonToHiMeetingBody = zod.object({
+  "personId": zod.number(),
+  "assignedRole": zod.string().optional()
+})
+
+
+/**
+ * @summary Remove a person from an H&I meeting
+ */
+export const RemovePersonFromHiMeetingParams = zod.object({
+  "id": zod.coerce.number(),
+  "personId": zod.coerce.number()
+})
+
+
+/**
+ * @summary Get weekly H&I meeting schedule grouped by day
+ */
+export const GetHiScheduleResponse = zod.object({
+  "days": zod.array(zod.object({
+  "day": zod.string(),
+  "meetings": zod.array(zod.object({
+  "id": zod.number(),
+  "name": zod.string(),
+  "day": zod.string(),
+  "startTime": zod.string(),
+  "endTime": zod.string(),
+  "location": zod.string().nullish(),
+  "link": zod.string().nullish(),
+  "type": zod.string(),
+  "format": zod.string(),
+  "literature": zod.string().nullish(),
+  "interaction": zod.string(),
+  "language": zod.string(),
+  "notes": zod.string().nullish(),
+  "createdAt": zod.string().optional(),
+  "people": zod.array(zod.object({
+  "id": zod.number(),
+  "name": zod.string(),
+  "role": zod.string(),
+  "phone": zod.string().nullish(),
+  "email": zod.string().nullish(),
+  "assignedRole": zod.string().nullish()
+}))
+}))
+}))
+})
+
+

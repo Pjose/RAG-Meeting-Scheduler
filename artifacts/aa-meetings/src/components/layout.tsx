@@ -1,5 +1,5 @@
 import { Link, useLocation } from "wouter";
-import { Calendar, Users, LayoutDashboard, Menu, X, ChevronRight, Printer } from "lucide-react";
+import { Calendar, Users, LayoutDashboard, Menu, X, ChevronRight, Printer, Building2 } from "lucide-react";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
 
@@ -9,6 +9,7 @@ interface LayoutProps {
 }
 
 export function PublicLayout({ children }: { children: React.ReactNode }) {
+  const [location] = useLocation();
   return (
     <div className="min-h-screen bg-background">
       <header className="border-b border-border bg-card shadow-xs sticky top-0 z-50">
@@ -22,12 +23,36 @@ export function PublicLayout({ children }: { children: React.ReactNode }) {
               <p className="text-xs text-muted-foreground hidden sm:block">Find a meeting near you</p>
             </div>
           </Link>
-          <Link
-            href="/admin"
-            className="text-xs text-muted-foreground hover:text-foreground transition-colors px-3 py-1.5 rounded border border-border hover:border-border/80 hover:bg-muted"
-          >
-            Admin
-          </Link>
+          <div className="flex items-center gap-2">
+            <Link
+              href="/"
+              className={cn(
+                "text-xs px-3 py-1.5 rounded border transition-colors",
+                location === "/"
+                  ? "border-primary/40 text-primary bg-primary/8"
+                  : "border-border text-muted-foreground hover:text-foreground hover:border-border/80 hover:bg-muted"
+              )}
+            >
+              Meetings
+            </Link>
+            <Link
+              href="/hi"
+              className={cn(
+                "text-xs px-3 py-1.5 rounded border transition-colors",
+                location === "/hi"
+                  ? "border-primary/40 text-primary bg-primary/8"
+                  : "border-border text-muted-foreground hover:text-foreground hover:border-border/80 hover:bg-muted"
+              )}
+            >
+              H&amp;I
+            </Link>
+            <Link
+              href="/admin"
+              className="text-xs text-muted-foreground hover:text-foreground transition-colors px-3 py-1.5 rounded border border-border hover:border-border/80 hover:bg-muted"
+            >
+              Admin
+            </Link>
+          </div>
         </div>
       </header>
       <main>{children}</main>
@@ -38,11 +63,13 @@ export function PublicLayout({ children }: { children: React.ReactNode }) {
 const adminNav = [
   { href: "/admin", label: "Dashboard", icon: LayoutDashboard },
   { href: "/admin/meetings", label: "Meetings", icon: Calendar },
+  { href: "/admin/hi-meetings", label: "H&I", icon: Building2 },
   { href: "/admin/people", label: "People", icon: Users },
 ];
 
 const printNav = [
   { href: "/admin/print/schedule", label: "Weekly Schedule", icon: Printer },
+  { href: "/admin/print/hi-schedule", label: "H&I Schedule", icon: Printer },
   { href: "/admin/print/contacts", label: "Contact List", icon: Printer },
 ];
 
@@ -52,7 +79,6 @@ export function AdminLayout({ children }: { children: React.ReactNode }) {
 
   return (
     <div className="min-h-screen bg-background flex">
-      {/* Sidebar */}
       <aside
         className={cn(
           "fixed inset-y-0 left-0 z-50 w-60 bg-sidebar flex flex-col transition-transform duration-200 lg:translate-x-0 lg:static lg:flex",
@@ -125,7 +151,6 @@ export function AdminLayout({ children }: { children: React.ReactNode }) {
         </div>
       </aside>
 
-      {/* Overlay */}
       {sidebarOpen && (
         <div
           className="fixed inset-0 z-40 bg-black/40 lg:hidden"
@@ -133,7 +158,6 @@ export function AdminLayout({ children }: { children: React.ReactNode }) {
         />
       )}
 
-      {/* Main content */}
       <div className="flex-1 flex flex-col min-w-0">
         <header className="h-16 border-b border-border bg-card flex items-center px-4 sm:px-6 gap-4 shrink-0 lg:hidden">
           <button

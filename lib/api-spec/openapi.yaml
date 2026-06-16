@@ -18,6 +18,8 @@ tags:
     description: Meeting-person assignment operations
   - name: schedule
     description: Schedule view operations
+  - name: hi
+    description: Hospitals & Institutions operations
 
 paths:
   /healthz:
@@ -339,6 +341,199 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Stats"
+
+  /hi-meetings:
+    get:
+      operationId: listHiMeetings
+      tags: [hi]
+      summary: List all H&I meetings
+      parameters:
+        - name: day
+          in: query
+          schema:
+            type: string
+        - name: type
+          in: query
+          schema:
+            type: string
+        - name: format
+          in: query
+          schema:
+            type: string
+        - name: interaction
+          in: query
+          schema:
+            type: string
+        - name: language
+          in: query
+          schema:
+            type: string
+        - name: search
+          in: query
+          schema:
+            type: string
+      responses:
+        "200":
+          description: List of H&I meetings
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Meeting"
+    post:
+      operationId: createHiMeeting
+      tags: [hi]
+      summary: Create an H&I meeting
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/MeetingInput"
+      responses:
+        "201":
+          description: Created H&I meeting
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Meeting"
+
+  /hi-meetings/{id}:
+    get:
+      operationId: getHiMeeting
+      tags: [hi]
+      summary: Get H&I meeting details
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: H&I meeting with assigned people
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MeetingDetail"
+        "404":
+          description: Not found
+    patch:
+      operationId: updateHiMeeting
+      tags: [hi]
+      summary: Update an H&I meeting
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/MeetingUpdate"
+      responses:
+        "200":
+          description: Updated H&I meeting
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Meeting"
+        "404":
+          description: Not found
+    delete:
+      operationId: deleteHiMeeting
+      tags: [hi]
+      summary: Delete an H&I meeting
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+
+  /hi-meetings/{id}/people:
+    get:
+      operationId: getHiMeetingPeople
+      tags: [hi]
+      summary: Get people assigned to an H&I meeting
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: List of assigned people
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/PersonAssignment"
+    post:
+      operationId: assignPersonToHiMeeting
+      tags: [hi]
+      summary: Assign a person to an H&I meeting
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AssignmentInput"
+      responses:
+        "201":
+          description: Created assignment
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PersonAssignment"
+
+  /hi-meetings/{id}/people/{personId}:
+    delete:
+      operationId: removePersonFromHiMeeting
+      tags: [hi]
+      summary: Remove a person from an H&I meeting
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: personId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Removed
+
+  /hi-schedule:
+    get:
+      operationId: getHiSchedule
+      tags: [hi]
+      summary: Get weekly H&I meeting schedule grouped by day
+      responses:
+        "200":
+          description: Weekly H&I schedule
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/WeeklySchedule"
 
 components:
   schemas:

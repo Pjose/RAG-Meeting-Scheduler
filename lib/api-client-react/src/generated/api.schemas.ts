@@ -188,3 +188,12 @@ role?: string;
 search?: string;
 };
 
+export type ListHiMeetingsParams = {
+day?: string;
+type?: string;
+format?: string;
+interaction?: string;
+language?: string;
+search?: string;
+};
+

@@ -4,14 +4,18 @@ import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import NotFound from "@/pages/not-found";
 import Schedule from "@/pages/schedule";
+import HiSchedule from "@/pages/hi-schedule";
 import MeetingDetail from "@/pages/meeting-detail";
 import AdminDashboard from "@/pages/admin/dashboard";
 import AdminMeetings from "@/pages/admin/meetings";
 import AdminMeetingEdit from "@/pages/admin/meeting-edit";
+import AdminHiMeetings from "@/pages/admin/hi-meetings";
+import AdminHiMeetingEdit from "@/pages/admin/hi-meeting-edit";
 import AdminPeople from "@/pages/admin/people";
 import AdminPersonEdit from "@/pages/admin/person-edit";
 import PrintSchedule from "@/pages/admin/print-schedule";
 import PrintContacts from "@/pages/admin/print-contacts";
+import PrintHiSchedule from "@/pages/admin/print-hi-schedule";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -26,16 +30,21 @@ function Router() {
   return (
     <Switch>
       <Route path="/" component={Schedule} />
+      <Route path="/hi" component={HiSchedule} />
       <Route path="/meetings/:id" component={MeetingDetail} />
       <Route path="/admin" component={AdminDashboard} />
       <Route path="/admin/meetings" component={AdminMeetings} />
       <Route path="/admin/meetings/new" component={AdminMeetingEdit} />
       <Route path="/admin/meetings/:id" component={AdminMeetingEdit} />
+      <Route path="/admin/hi-meetings" component={AdminHiMeetings} />
+      <Route path="/admin/hi-meetings/new" component={AdminHiMeetingEdit} />
+      <Route path="/admin/hi-meetings/:id" component={AdminHiMeetingEdit} />
       <Route path="/admin/people" component={AdminPeople} />
       <Route path="/admin/people/new" component={AdminPersonEdit} />
       <Route path="/admin/people/:id" component={AdminPersonEdit} />
       <Route path="/admin/print/schedule" component={PrintSchedule} />
       <Route path="/admin/print/contacts" component={PrintContacts} />
+      <Route path="/admin/print/hi-schedule" component={PrintHiSchedule} />
       <Route component={NotFound} />
     </Switch>
   );

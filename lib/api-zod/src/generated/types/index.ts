@@ -10,6 +10,7 @@ export * from './assignmentInput';
 export * from './countByLabel';
 export * from './daySchedule';
 export * from './healthStatus';
+export * from './listHiMeetingsParams';
 export * from './listMeetingsParams';
 export * from './listPeopleParams';
 export * from './meeting';
