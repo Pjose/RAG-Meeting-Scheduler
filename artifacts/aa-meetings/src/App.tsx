@@ -6,6 +6,7 @@ import NotFound from "@/pages/not-found";
 import Schedule from "@/pages/schedule";
 import HiSchedule from "@/pages/hi-schedule";
 import MeetingDetail from "@/pages/meeting-detail";
+import HiMeetingDetail from "@/pages/hi-meeting-detail";
 import AdminDashboard from "@/pages/admin/dashboard";
 import AdminMeetings from "@/pages/admin/meetings";
 import AdminMeetingEdit from "@/pages/admin/meeting-edit";
@@ -31,6 +32,7 @@ function Router() {
     <Switch>
       <Route path="/" component={Schedule} />
       <Route path="/hi" component={HiSchedule} />
+      <Route path="/hi/:id" component={HiMeetingDetail} />
       <Route path="/meetings/:id" component={MeetingDetail} />
       <Route path="/admin" component={AdminDashboard} />
       <Route path="/admin/meetings" component={AdminMeetings} />

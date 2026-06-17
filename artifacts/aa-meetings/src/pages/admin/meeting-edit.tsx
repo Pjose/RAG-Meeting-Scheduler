@@ -37,6 +37,7 @@ const LITERATURE = [
   "A.A. In Prison: Inmate To Inmate",
   "As Bill Sees It",
   "Big Book",
+  "Plain Language Big Book",
   "Came To Believe...",
   "Daily Reflections",
   "Dr. Bob And The Good Oldtimers",

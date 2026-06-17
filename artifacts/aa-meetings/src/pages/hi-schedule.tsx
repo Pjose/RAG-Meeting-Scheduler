@@ -1,5 +1,6 @@
 import { useState } from "react";
-import { Search, Filter, MapPin, Globe, Users, Clock, ChevronDown, X, List, LayoutGrid } from "lucide-react";
+import { Link } from "wouter";
+import { Search, Filter, MapPin, Globe, Users, Clock, ChevronDown, X, List, LayoutGrid, ChevronRight } from "lucide-react";
 import { useGetHiSchedule, useListHiMeetings, getGetHiScheduleQueryKey, getListHiMeetingsQueryKey } from "@workspace/api-client-react";
 import { PublicLayout } from "@/components/layout";
 import { Badge } from "@/components/ui/badge";
@@ -275,7 +276,10 @@ function HiWeeklyGrid({ days }: { days: Array<{ day: string; meetings: any[] }> 
 
 function HiGridCard({ meeting }: { meeting: any }) {
   return (
-    <div className="block bg-card border border-card-border rounded-md p-1.5 text-left">
+    <Link
+      href={`/hi/${meeting.id}`}
+      className="block bg-card border border-card-border rounded-md p-1.5 text-left hover:border-primary/40 hover:shadow-sm transition-all"
+    >
       <p className="text-[11px] font-semibold text-foreground leading-tight line-clamp-2 mb-1">{meeting.name}</p>
       <div className="flex items-center gap-1 text-[10px] text-muted-foreground">
         <Clock size={9} className="shrink-0" />
@@ -292,7 +296,7 @@ function HiGridCard({ meeting }: { meeting: any }) {
           <span className="truncate">{meeting.interaction}</span>
         </div>
       )}
-    </div>
+    </Link>
   );
 }
 
@@ -317,11 +321,14 @@ function HiFilteredResults({ meetings }: { meetings: any[] }) {
 
 function HiMeetingCard({ meeting }: { meeting: any }) {
   return (
-    <div className="block bg-card border border-card-border rounded-lg p-4">
+    <Link
+      href={`/hi/${meeting.id}`}
+      className="block bg-card border border-card-border rounded-lg p-4 hover:border-primary/40 hover:shadow-sm transition-all group"
+    >
       <div className="flex items-start justify-between gap-4">
         <div className="min-w-0 flex-1">
           <div className="flex items-center gap-2 mb-1.5 flex-wrap">
-            <h3 className="font-semibold text-foreground text-sm truncate">{meeting.name}</h3>
+            <h3 className="font-semibold text-foreground text-sm truncate group-hover:text-primary transition-colors">{meeting.name}</h3>
             <Badge variant="outline" className={`text-xs shrink-0 ${typeColor(meeting.type)}`}>{meeting.type}</Badge>
           </div>
           <div className="flex items-center gap-4 text-xs text-muted-foreground flex-wrap">
@@ -343,9 +350,10 @@ function HiMeetingCard({ meeting }: { meeting: any }) {
             {interactionIcon(meeting.interaction)}
             {meeting.interaction}
           </span>
+          <ChevronRight size={14} className="text-muted-foreground/50 group-hover:text-primary transition-colors" />
         </div>
       </div>
-    </div>
+    </Link>
   );
 }
 
