@@ -328,6 +328,7 @@ export const GetScheduleResponse = zod.object({
 export const GetStatsResponse = zod.object({
   "totalMeetings": zod.number(),
   "totalPeople": zod.number(),
+  "totalHiMeetings": zod.number(),
   "meetingsByDay": zod.array(zod.object({
   "label": zod.string(),
   "count": zod.number()

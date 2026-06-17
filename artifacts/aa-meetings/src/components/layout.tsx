@@ -1,7 +1,8 @@
 import { Link, useLocation } from "wouter";
-import { Calendar, Users, LayoutDashboard, Menu, X, ChevronRight, Printer, Building2 } from "lucide-react";
-import { useState } from "react";
+import { Calendar, Users, LayoutDashboard, Menu, X, ChevronRight, Printer, Building2, LogOut } from "lucide-react";
+import { useState, useEffect } from "react";
 import { cn } from "@/lib/utils";
+import { useAuth, useLogout } from "@/lib/auth";
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -74,8 +75,31 @@ const printNav = [
 ];
 
 export function AdminLayout({ children }: { children: React.ReactNode }) {
-  const [location] = useLocation();
+  const [location, setLocation] = useLocation();
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const { data: auth, isLoading: authLoading } = useAuth();
+  const logout = useLogout();
+
+  useEffect(() => {
+    if (!authLoading && auth?.authenticated === false) {
+      setLocation("/admin/login");
+    }
+  }, [authLoading, auth, setLocation]);
+
+  if (authLoading) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="w-6 h-6 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+      </div>
+    );
+  }
+
+  if (!auth?.authenticated) return null;
+
+  async function handleLogout() {
+    await logout();
+    setLocation("/admin/login");
+  }
 
   return (
     <div className="min-h-screen bg-background flex">
@@ -140,7 +164,7 @@ export function AdminLayout({ children }: { children: React.ReactNode }) {
             );
           })}
         </nav>
-        <div className="p-4 border-t border-sidebar-border">
+        <div className="p-4 border-t border-sidebar-border space-y-2">
           <Link
             href="/"
             className="flex items-center gap-2 text-xs text-sidebar-foreground/60 hover:text-sidebar-foreground transition-colors"
@@ -148,6 +172,13 @@ export function AdminLayout({ children }: { children: React.ReactNode }) {
             <ChevronRight size={12} className="rotate-180" />
             Public Schedule
           </Link>
+          <button
+            onClick={handleLogout}
+            className="flex items-center gap-2 text-xs text-sidebar-foreground/60 hover:text-sidebar-foreground transition-colors w-full"
+          >
+            <LogOut size={12} />
+            Sign Out
+          </button>
         </div>
       </aside>
 

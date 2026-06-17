@@ -17,6 +17,7 @@ import AdminPersonEdit from "@/pages/admin/person-edit";
 import PrintSchedule from "@/pages/admin/print-schedule";
 import PrintContacts from "@/pages/admin/print-contacts";
 import PrintHiSchedule from "@/pages/admin/print-hi-schedule";
+import AdminLogin from "@/pages/admin/login";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -34,6 +35,7 @@ function Router() {
       <Route path="/hi" component={HiSchedule} />
       <Route path="/hi/:id" component={HiMeetingDetail} />
       <Route path="/meetings/:id" component={MeetingDetail} />
+      <Route path="/admin/login" component={AdminLogin} />
       <Route path="/admin" component={AdminDashboard} />
       <Route path="/admin/meetings" component={AdminMeetings} />
       <Route path="/admin/meetings/new" component={AdminMeetingEdit} />

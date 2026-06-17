@@ -1,5 +1,5 @@
 import { Link } from "wouter";
-import { Calendar, Users, ArrowRight, TrendingUp } from "lucide-react";
+import { Calendar, Users, ArrowRight, TrendingUp, Building2 } from "lucide-react";
 import { useGetStats } from "@workspace/api-client-react";
 import { AdminLayout } from "@/components/layout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -17,12 +17,19 @@ export default function AdminDashboard() {
         </div>
 
         {/* Stats */}
-        <div className="grid grid-cols-2 gap-4 mb-8">
+        <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 mb-8">
           <StatCard
             label="Total Meetings"
             value={stats?.totalMeetings}
             icon={<Calendar size={18} />}
             href="/admin/meetings"
+            loading={isLoading}
+          />
+          <StatCard
+            label="H&amp;I Commitments"
+            value={stats?.totalHiMeetings}
+            icon={<Building2 size={18} />}
+            href="/admin/hi-meetings"
             loading={isLoading}
           />
           <StatCard
@@ -48,8 +55,9 @@ export default function AdminDashboard() {
         )}
 
         {/* Quick actions */}
-        <div className="mt-8 grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div className="mt-8 grid grid-cols-1 sm:grid-cols-3 gap-4">
           <QuickAction href="/admin/meetings/new" label="Add a Meeting" sub="Schedule a new AA meeting" icon={<Calendar size={18} />} />
+          <QuickAction href="/admin/hi-meetings/new" label="Add H&amp;I Commitment" sub="Add a new H&amp;I meeting" icon={<Building2 size={18} />} />
           <QuickAction href="/admin/people/new" label="Add a Person" sub="Add a contact or chairperson" icon={<Users size={18} />} />
         </div>
       </div>

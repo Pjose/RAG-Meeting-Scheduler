@@ -1,6 +1,6 @@
 import { Router, type IRouter } from "express";
 import { eq, sql } from "drizzle-orm";
-import { db, meetingsTable, peopleTable, assignmentsTable } from "@workspace/db";
+import { db, meetingsTable, peopleTable, assignmentsTable, hiMeetingsTable } from "@workspace/db";
 
 const router: IRouter = Router();
 
@@ -78,6 +78,10 @@ router.get("/stats", async (_req, res): Promise<void> => {
     .select({ count: sql<number>`count(*)::int` })
     .from(peopleTable);
 
+  const [{ count: totalHiMeetings }] = await db
+    .select({ count: sql<number>`count(*)::int` })
+    .from(hiMeetingsTable);
+
   const meetingsByDay = await db
     .select({
       label: meetingsTable.day,
@@ -108,6 +112,7 @@ router.get("/stats", async (_req, res): Promise<void> => {
   res.json({
     totalMeetings,
     totalPeople,
+    totalHiMeetings,
     meetingsByDay,
     meetingsByType,
     meetingsByInteraction,

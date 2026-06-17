@@ -169,6 +169,7 @@ export interface CountByLabel {
 export interface Stats {
   totalMeetings: number;
   totalPeople: number;
+  totalHiMeetings: number;
   meetingsByDay: CountByLabel[];
   meetingsByType: CountByLabel[];
   meetingsByInteraction: CountByLabel[];

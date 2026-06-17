@@ -799,11 +799,13 @@ components:
 
     Stats:
       type: object
-      required: [totalMeetings, totalPeople, meetingsByDay, meetingsByType, meetingsByInteraction]
+      required: [totalMeetings, totalPeople, totalHiMeetings, meetingsByDay, meetingsByType, meetingsByInteraction]
       properties:
         totalMeetings:
           type: integer
         totalPeople:
+          type: integer
+        totalHiMeetings:
           type: integer
         meetingsByDay:
           type: array
