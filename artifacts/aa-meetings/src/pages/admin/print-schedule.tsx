@@ -108,9 +108,6 @@ export default function PrintSchedule() {
                                     {people.map((p: any) => (
                                       <p key={p.id} className="text-foreground leading-tight">
                                         <span className="font-medium">{p.name}</span>
-                                        {(p.assignedRole || p.role) && (
-                                          <span className="text-muted-foreground"> · {p.assignedRole || p.role}</span>
-                                        )}
                                       </p>
                                     ))}
                                   </div>
