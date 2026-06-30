@@ -19,19 +19,15 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/hooks/use-toast";
-
-const ROLES = [
-  "Chairperson", "Co-Chairperson", "Secretary", "Treasurer", "GSR", "Intergroup",
-  "PI", "H&I", "Communication", "Unity", "Meeting Co-Chair", "Member",
-  "Alternate GSR", "Alternate Treasurer", "Alternate Intergroup", "Assistant Communication",
-];
+import { PERSON_ROLES, GENDERS, formatTime } from "@/lib/constants";
 
 const formSchema = z.object({
   name: z.string().min(1, "Name is required"),
   role: z.string().min(1, "Role is required"),
   phone: z.string().optional(),
   email: z.string().email("Invalid email").optional().or(z.literal("")),
-  cleanDate: z.string().optional(),
+  gender: z.string().optional(),
+  soberDate: z.string().optional(),
 });
 
 type FormValues = z.infer<typeof formSchema>;
@@ -55,7 +51,7 @@ export default function AdminPersonEdit() {
 
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
-    defaultValues: { name: "", role: "", phone: "", email: "", cleanDate: "" },
+    defaultValues: { name: "", role: "", phone: "", email: "", gender: "", soberDate: "" },
   });
 
   useEffect(() => {
@@ -65,7 +61,8 @@ export default function AdminPersonEdit() {
         role: person.role,
         phone: person.phone ?? "",
         email: person.email ?? "",
-        cleanDate: person.cleanDate ?? "",
+        gender: (person as any).gender ?? "",
+        soberDate: (person as any).soberDate ?? "",
       });
     }
   }, [person, isNew]);
@@ -76,8 +73,9 @@ export default function AdminPersonEdit() {
       role: values.role,
       phone: values.phone || undefined,
       email: values.email || undefined,
-      cleanDate: values.cleanDate || undefined,
-    };
+      gender: values.gender || undefined,
+      soberDate: values.soberDate || undefined,
+    } as any;
 
     if (isNew) {
       await createMutation.mutateAsync({ data: payload });
@@ -102,6 +100,10 @@ export default function AdminPersonEdit() {
       </AdminLayout>
     );
   }
+
+  const meetings = (person as any)?.meetings ?? [];
+  const hiMeetings = (person as any)?.hiMeetings ?? [];
+  const trustedServants = (person as any)?.trustedServants ?? [];
 
   return (
     <AdminLayout>
@@ -129,22 +131,44 @@ export default function AdminPersonEdit() {
                 </FormItem>
               )} />
 
-              <FormField control={form.control} name="role" render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Role</FormLabel>
-                  <Select value={field.value} onValueChange={field.onChange}>
-                    <FormControl>
-                      <SelectTrigger data-testid="select-role">
-                        <SelectValue placeholder="Select role" />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      {ROLES.map((r) => <SelectItem key={r} value={r}>{r}</SelectItem>)}
-                    </SelectContent>
-                  </Select>
-                  <FormMessage />
-                </FormItem>
-              )} />
+              <div className="grid grid-cols-2 gap-4">
+                <FormField control={form.control} name="role" render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Role</FormLabel>
+                    <Select value={field.value} onValueChange={field.onChange}>
+                      <FormControl>
+                        <SelectTrigger data-testid="select-role">
+                          <SelectValue placeholder="Select role" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent className="max-h-60 overflow-y-auto">
+                        {PERSON_ROLES.map((r) => <SelectItem key={r} value={r}>{r}</SelectItem>)}
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )} />
+
+                <FormField control={form.control} name="gender" render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Gender <span className="text-muted-foreground font-normal">(optional)</span></FormLabel>
+                    <Select
+                      value={field.value || "__none__"}
+                      onValueChange={(v) => field.onChange(v === "__none__" ? "" : v)}
+                    >
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select gender" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        <SelectItem value="__none__">Not specified</SelectItem>
+                        {GENDERS.map((g) => <SelectItem key={g} value={g}>{g}</SelectItem>)}
+                      </SelectContent>
+                    </Select>
+                  </FormItem>
+                )} />
+              </div>
 
               <FormField control={form.control} name="phone" render={({ field }) => (
                 <FormItem>
@@ -165,11 +189,11 @@ export default function AdminPersonEdit() {
                 </FormItem>
               )} />
 
-              <FormField control={form.control} name="cleanDate" render={({ field }) => (
+              <FormField control={form.control} name="soberDate" render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Clean Date <span className="text-muted-foreground font-normal">(optional)</span></FormLabel>
+                  <FormLabel>Sober Date <span className="text-muted-foreground font-normal">(optional)</span></FormLabel>
                   <FormControl>
-                    <Input {...field} type="date" data-testid="input-clean-date" />
+                    <Input {...field} type="date" data-testid="input-sober-date" />
                   </FormControl>
                 </FormItem>
               )} />
@@ -186,17 +210,61 @@ export default function AdminPersonEdit() {
           </Form>
         </div>
 
-        {/* Assigned meetings (read-only view) */}
-        {!isNew && person && person.meetings && person.meetings.length > 0 && (
+        {/* Assigned Meetings */}
+        {!isNew && meetings.length > 0 && (
           <div className="mt-6 bg-card border border-card-border rounded-xl p-5">
             <h2 className="font-semibold text-sm text-foreground mb-3">Assigned Meetings</h2>
             <div className="space-y-2">
-              {person.meetings.map((m: any) => (
-                <div key={m.id} className="flex items-center gap-3 py-2" data-testid={`assigned-meeting-${m.id}`}>
+              {meetings.map((m: any) => (
+                <div key={m.id} className="flex items-center gap-3 py-2 border-b border-border last:border-0">
                   <div className="w-1.5 h-1.5 rounded-full bg-primary shrink-0" />
                   <div>
                     <span className="text-sm font-medium text-foreground">{m.name}</span>
-                    <span className="text-xs text-muted-foreground ml-2">{m.day} {m.startTime}</span>
+                    <span className="text-xs text-muted-foreground ml-2">
+                      {m.day} {formatTime(m.startTime)}
+                      {m.assignedRole && <> · <span className="italic">{m.assignedRole}</span></>}
+                    </span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Assigned H&I Meetings */}
+        {!isNew && hiMeetings.length > 0 && (
+          <div className="mt-4 bg-card border border-card-border rounded-xl p-5">
+            <h2 className="font-semibold text-sm text-foreground mb-3">H&amp;I Commitments</h2>
+            <div className="space-y-2">
+              {hiMeetings.map((m: any) => (
+                <div key={m.id} className="flex items-center gap-3 py-2 border-b border-border last:border-0">
+                  <div className="w-1.5 h-1.5 rounded-full bg-amber-600 shrink-0" />
+                  <div>
+                    <span className="text-sm font-medium text-foreground">{m.name}</span>
+                    <span className="text-xs text-muted-foreground ml-2">
+                      {m.day} {formatTime(m.startTime)}
+                      {m.assignedRole && <> · <span className="italic">{m.assignedRole}</span></>}
+                    </span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Trusted Servant Positions */}
+        {!isNew && trustedServants.length > 0 && (
+          <div className="mt-4 bg-card border border-card-border rounded-xl p-5">
+            <h2 className="font-semibold text-sm text-foreground mb-3">Trusted Servant Positions</h2>
+            <div className="space-y-2">
+              {trustedServants.map((ts: any) => (
+                <div key={ts.id} className="flex items-start gap-3 py-2 border-b border-border last:border-0">
+                  <div className="w-1.5 h-1.5 rounded-full bg-gold shrink-0 mt-1.5" style={{ background: "#c49a3c" }} />
+                  <div>
+                    <span className="text-sm font-medium text-foreground">{ts.title}</span>
+                    {ts.termLength && <span className="text-xs text-muted-foreground ml-2">· {ts.termLength}</span>}
+                    {ts.startDate && <span className="text-xs text-muted-foreground ml-2">· started {ts.startDate}</span>}
+                    {ts.description && <p className="text-xs text-muted-foreground mt-0.5">{ts.description}</p>}
                   </div>
                 </div>
               ))}

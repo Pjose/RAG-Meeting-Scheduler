@@ -1,6 +1,7 @@
 import { useRoute, Link } from "wouter";
 import { ArrowLeft, MapPin, Globe, Clock, BookOpen, Users, Info, Phone, Mail, ChevronRight } from "lucide-react";
 import { useGetMeeting, getGetMeetingQueryKey } from "@workspace/api-client-react";
+import { formatTime } from "@/lib/constants";
 import { PublicLayout } from "@/components/layout";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -83,13 +84,13 @@ export default function MeetingDetail() {
                 )}
               </div>
               <h1 className="font-serif text-2xl sm:text-3xl font-semibold text-foreground mb-1">{meeting.name}</h1>
-              <p className="text-muted-foreground text-sm">{meeting.day}s &bull; {meeting.startTime} – {meeting.endTime}</p>
+              <p className="text-muted-foreground text-sm">{meeting.day}s &bull; {formatTime(meeting.startTime)} – {formatTime(meeting.endTime)}</p>
             </div>
 
             {/* Details card */}
             <div className="bg-card border border-card-border rounded-xl p-5 mb-5 space-y-4" data-testid="meeting-details-card">
               <DetailRow icon={<Clock size={15} />} label="Time">
-                {meeting.day}, {meeting.startTime} – {meeting.endTime}
+                {meeting.day}, {formatTime(meeting.startTime)} – {formatTime(meeting.endTime)}
               </DetailRow>
               {meeting.location && (
                 <DetailRow icon={<MapPin size={15} />} label="Location">

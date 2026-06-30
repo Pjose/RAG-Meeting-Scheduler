@@ -18,6 +18,8 @@ import PrintSchedule from "@/pages/admin/print-schedule";
 import PrintContacts from "@/pages/admin/print-contacts";
 import PrintHiSchedule from "@/pages/admin/print-hi-schedule";
 import AdminLogin from "@/pages/admin/login";
+import AdminTrustedServants from "@/pages/admin/trusted-servants";
+import AdminTrustedServantEdit from "@/pages/admin/trusted-servant-edit";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -46,6 +48,9 @@ function Router() {
       <Route path="/admin/people" component={AdminPeople} />
       <Route path="/admin/people/new" component={AdminPersonEdit} />
       <Route path="/admin/people/:id" component={AdminPersonEdit} />
+      <Route path="/admin/trusted-servants" component={AdminTrustedServants} />
+      <Route path="/admin/trusted-servants/new" component={AdminTrustedServantEdit} />
+      <Route path="/admin/trusted-servants/:id" component={AdminTrustedServantEdit} />
       <Route path="/admin/print/schedule" component={PrintSchedule} />
       <Route path="/admin/print/contacts" component={PrintContacts} />
       <Route path="/admin/print/hi-schedule" component={PrintHiSchedule} />

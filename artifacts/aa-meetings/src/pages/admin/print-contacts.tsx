@@ -8,16 +8,15 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Checkbox } from "@/components/ui/checkbox";
+import { PERSON_ROLES } from "@/lib/constants";
 
-const ROLES = ["Chairperson", "Co-Chairperson", "Secretary", "GSR", "Treasurer", "Member"];
-
-function yearsClean(cleanDate: string | null): number | null {
-  if (!cleanDate) return null;
-  const clean = new Date(cleanDate);
-  if (isNaN(clean.getTime())) return null;
+function yearsSober(soberDate: string | null | undefined): number | null {
+  if (!soberDate) return null;
+  const d = new Date(soberDate);
+  if (isNaN(d.getTime())) return null;
   const now = new Date();
-  const diff = (now.getTime() - clean.getTime()) / (1000 * 60 * 60 * 24 * 365.25);
-  return diff;
+  return (now.getTime() - d.getTime()) / (1000 * 60 * 60 * 24 * 365.25);
 }
 
 function formatYears(years: number): string {
@@ -25,73 +24,144 @@ function formatYears(years: number): string {
   return `${years.toFixed(1)} yr${years >= 2 ? "s" : ""}`;
 }
 
-function formatDate(dateStr: string | null): string {
+function formatDate(dateStr: string | null | undefined): string {
   if (!dateStr) return "—";
-  const d = new Date(dateStr);
+  const d = new Date(dateStr + "T00:00:00");
   if (isNaN(d.getTime())) return dateStr;
   return d.toLocaleDateString("en-US", { year: "numeric", month: "short", day: "numeric" });
 }
 
-type SortKey = "name" | "cleanDate" | "role";
+type SortKey = "name" | "soberDate" | "role";
+
+type ColKey = "role" | "phone" | "email" | "soberDate" | "yearsSober" | "gender";
+
+const ALL_COLUMNS: { key: ColKey; label: string }[] = [
+  { key: "role", label: "Role" },
+  { key: "gender", label: "Gender" },
+  { key: "phone", label: "Phone" },
+  { key: "email", label: "Email" },
+  { key: "soberDate", label: "Sober Date" },
+  { key: "yearsSober", label: "Years Sober" },
+];
 
 export default function PrintContacts() {
   const [minYears, setMinYears] = useState("");
-  const [maxYears, setMaxYears] = useState("");
-  const [cleanFrom, setCleanFrom] = useState("");
-  const [cleanTo, setCleanTo] = useState("");
+  const [soberFrom, setSoberFrom] = useState("");
+  const [soberTo, setSoberTo] = useState("");
   const [roleFilter, setRoleFilter] = useState("all");
+  const [genderFilter, setGenderFilter] = useState("all");
+  const [fiveYearsPlus, setFiveYearsPlus] = useState(false);
   const [sortBy, setSortBy] = useState<SortKey>("name");
+  const [selectedCols, setSelectedCols] = useState<Set<ColKey>>(
+    new Set(["role", "phone", "email", "soberDate", "yearsSober"])
+  );
 
   const peopleQuery = useListPeople({});
 
+  const toggleCol = (col: ColKey) => {
+    setSelectedCols((prev) => {
+      const next = new Set(prev);
+      if (next.has(col)) next.delete(col);
+      else next.add(col);
+      return next;
+    });
+  };
+
   const filtered = useMemo(() => {
-    const all = peopleQuery.data ?? [];
+    const all = (peopleQuery.data ?? []) as any[];
     return all
       .filter((p) => {
         if (roleFilter !== "all" && p.role !== roleFilter) return false;
+        if (genderFilter !== "all" && (p.gender ?? "") !== genderFilter) return false;
 
-        const yrs = yearsClean(p.cleanDate ?? null);
+        const yrs = yearsSober(p.soberDate);
 
+        if (fiveYearsPlus) {
+          if (yrs === null || yrs < 5) return false;
+        }
         if (minYears !== "") {
           const min = parseFloat(minYears);
           if (yrs === null || yrs < min) return false;
         }
-        if (maxYears !== "") {
-          const max = parseFloat(maxYears);
-          if (yrs === null || yrs > max) return false;
+        if (soberFrom !== "") {
+          if (!p.soberDate || p.soberDate < soberFrom) return false;
         }
-        if (cleanFrom !== "") {
-          if (!p.cleanDate || p.cleanDate < cleanFrom) return false;
-        }
-        if (cleanTo !== "") {
-          if (!p.cleanDate || p.cleanDate > cleanTo) return false;
+        if (soberTo !== "") {
+          if (!p.soberDate || p.soberDate > soberTo) return false;
         }
         return true;
       })
-      .sort((a, b) => {
+      .sort((a: any, b: any) => {
         if (sortBy === "name") return a.name.localeCompare(b.name);
-        if (sortBy === "cleanDate") {
-          if (!a.cleanDate && !b.cleanDate) return 0;
-          if (!a.cleanDate) return 1;
-          if (!b.cleanDate) return -1;
-          return a.cleanDate.localeCompare(b.cleanDate);
+        if (sortBy === "soberDate") {
+          if (!a.soberDate && !b.soberDate) return 0;
+          if (!a.soberDate) return 1;
+          if (!b.soberDate) return -1;
+          return a.soberDate.localeCompare(b.soberDate);
         }
         if (sortBy === "role") return a.role.localeCompare(b.role);
         return 0;
       });
-  }, [peopleQuery.data, roleFilter, minYears, maxYears, cleanFrom, cleanTo, sortBy]);
+  }, [peopleQuery.data, roleFilter, genderFilter, fiveYearsPlus, minYears, soberFrom, soberTo, sortBy]);
+
+  const menOnly = filtered.filter((p: any) => p.gender === "Male");
+  const womenOnly = filtered.filter((p: any) => p.gender === "Female");
 
   const activeFiltersCount = [
     roleFilter !== "all",
+    genderFilter !== "all",
+    fiveYearsPlus,
     minYears !== "",
-    maxYears !== "",
-    cleanFrom !== "",
-    cleanTo !== "",
+    soberFrom !== "",
+    soberTo !== "",
   ].filter(Boolean).length;
 
   const clearFilters = () => {
-    setMinYears(""); setMaxYears(""); setCleanFrom(""); setCleanTo(""); setRoleFilter("all");
+    setMinYears(""); setSoberFrom(""); setSoberTo("");
+    setRoleFilter("all"); setGenderFilter("all"); setFiveYearsPlus(false);
   };
+
+  const visibleCols = ALL_COLUMNS.filter((c) => selectedCols.has(c.key));
+
+  function renderTable(rows: any[], title?: string) {
+    return (
+      <div className="overflow-x-auto mb-8">
+        {title && <h2 className="text-lg font-bold mb-2 print:text-base">{title}</h2>}
+        <table className="w-full border-collapse text-sm print:text-[10px]">
+          <thead>
+            <tr className="bg-sidebar text-sidebar-foreground print:bg-gray-800 print:text-white">
+              <th className="border border-border print:border-gray-300 px-3 py-2 text-left font-semibold">Name</th>
+              {visibleCols.map((c) => (
+                <th key={c.key} className="border border-border print:border-gray-300 px-3 py-2 text-left font-semibold">
+                  {c.label}
+                </th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            {rows.map((p, i) => {
+              const yrs = yearsSober(p.soberDate);
+              return (
+                <tr key={p.id} className={i % 2 === 0 ? "bg-card print:bg-white" : "bg-muted/40 print:bg-gray-50"}>
+                  <td className="border border-border print:border-gray-300 px-3 py-2 font-medium text-foreground">{p.name}</td>
+                  {visibleCols.map((c) => (
+                    <td key={c.key} className="border border-border print:border-gray-300 px-3 py-2 text-muted-foreground">
+                      {c.key === "role" && p.role}
+                      {c.key === "gender" && (p.gender ?? "—")}
+                      {c.key === "phone" && <span className="font-mono">{p.phone ?? "—"}</span>}
+                      {c.key === "email" && (p.email ?? "—")}
+                      {c.key === "soberDate" && formatDate(p.soberDate)}
+                      {c.key === "yearsSober" && (yrs !== null ? <span className="font-medium text-foreground">{formatYears(yrs)}</span> : "—")}
+                    </td>
+                  ))}
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
+    );
+  }
 
   return (
     <AdminLayout>
@@ -115,8 +185,8 @@ export default function PrintContacts() {
         </Button>
       </div>
 
-      {/* Filter panel — screen only */}
-      <div className="print:hidden bg-card border border-card-border rounded-lg p-4 mb-6">
+      {/* Filter panel */}
+      <div className="print:hidden bg-card border border-card-border rounded-lg p-4 mb-4">
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-2">
             <Filter size={14} className="text-muted-foreground" />
@@ -128,82 +198,77 @@ export default function PrintContacts() {
             )}
           </div>
           {activeFiltersCount > 0 && (
-            <Button variant="ghost" size="sm" onClick={clearFilters} className="text-xs h-7">
-              Clear all
-            </Button>
+            <Button variant="ghost" size="sm" onClick={clearFilters} className="text-xs h-7">Clear all</Button>
           )}
         </div>
 
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
-          {/* Role */}
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4 mb-4">
           <div className="space-y-1.5">
             <Label className="text-xs text-muted-foreground">Role</Label>
             <Select value={roleFilter} onValueChange={setRoleFilter}>
-              <SelectTrigger className="h-8 text-xs">
-                <SelectValue placeholder="All roles" />
-              </SelectTrigger>
-              <SelectContent>
+              <SelectTrigger className="h-8 text-xs"><SelectValue placeholder="All roles" /></SelectTrigger>
+              <SelectContent className="max-h-60 overflow-y-auto">
                 <SelectItem value="all">All roles</SelectItem>
-                {ROLES.map((r) => <SelectItem key={r} value={r}>{r}</SelectItem>)}
+                {PERSON_ROLES.map((r) => <SelectItem key={r} value={r}>{r}</SelectItem>)}
               </SelectContent>
             </Select>
           </div>
-
-          {/* Min years clean */}
           <div className="space-y-1.5">
-            <Label className="text-xs text-muted-foreground">Min years clean</Label>
-            <Input
-              type="number"
-              min={0}
-              step={0.5}
-              placeholder="e.g. 5"
-              value={minYears}
-              onChange={(e) => setMinYears(e.target.value)}
-              className="h-8 text-xs"
-            />
+            <Label className="text-xs text-muted-foreground">Gender</Label>
+            <Select value={genderFilter} onValueChange={setGenderFilter}>
+              <SelectTrigger className="h-8 text-xs"><SelectValue placeholder="All" /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All</SelectItem>
+                <SelectItem value="Male">Men</SelectItem>
+                <SelectItem value="Female">Women</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
-
-          {/* Max years clean */}
           <div className="space-y-1.5">
-            <Label className="text-xs text-muted-foreground">Max years clean</Label>
-            <Input
-              type="number"
-              min={0}
-              step={0.5}
-              placeholder="e.g. 10"
-              value={maxYears}
-              onChange={(e) => setMaxYears(e.target.value)}
-              className="h-8 text-xs"
-            />
+            <Label className="text-xs text-muted-foreground">Min years sober</Label>
+            <Input type="number" min={0} step={0.5} placeholder="e.g. 5" value={minYears} onChange={(e) => setMinYears(e.target.value)} className="h-8 text-xs" />
           </div>
-
-          {/* Clean date from */}
           <div className="space-y-1.5">
-            <Label className="text-xs text-muted-foreground">Clean date — from</Label>
-            <Input
-              type="date"
-              value={cleanFrom}
-              onChange={(e) => setCleanFrom(e.target.value)}
-              className="h-8 text-xs"
-            />
+            <Label className="text-xs text-muted-foreground">Sober date — from</Label>
+            <Input type="date" value={soberFrom} onChange={(e) => setSoberFrom(e.target.value)} className="h-8 text-xs" />
           </div>
-
-          {/* Clean date to */}
           <div className="space-y-1.5">
-            <Label className="text-xs text-muted-foreground">Clean date — to</Label>
-            <Input
-              type="date"
-              value={cleanTo}
-              onChange={(e) => setCleanTo(e.target.value)}
-              className="h-8 text-xs"
-            />
+            <Label className="text-xs text-muted-foreground">Sober date — to</Label>
+            <Input type="date" value={soberTo} onChange={(e) => setSoberTo(e.target.value)} className="h-8 text-xs" />
+          </div>
+          <div className="flex items-end pb-1">
+            <label className="flex items-center gap-2 cursor-pointer">
+              <Checkbox
+                checked={fiveYearsPlus}
+                onCheckedChange={(v) => setFiveYearsPlus(!!v)}
+                className="h-4 w-4"
+              />
+              <span className="text-xs text-foreground">5+ years sober</span>
+            </label>
+          </div>
+        </div>
+
+        {/* Column selector */}
+        <div className="border-t border-border pt-4">
+          <p className="text-xs font-medium text-muted-foreground mb-2">Print columns</p>
+          <div className="flex flex-wrap gap-3">
+            {ALL_COLUMNS.map((c) => (
+              <label key={c.key} className="flex items-center gap-1.5 cursor-pointer">
+                <Checkbox
+                  checked={selectedCols.has(c.key)}
+                  onCheckedChange={() => toggleCol(c.key)}
+                  className="h-3.5 w-3.5"
+                />
+                <span className="text-xs text-foreground">{c.label}</span>
+              </label>
+            ))}
           </div>
         </div>
 
         {/* Sort */}
         <div className="mt-4 flex items-center gap-2">
           <span className="text-xs text-muted-foreground">Sort by:</span>
-          {(["name", "cleanDate", "role"] as SortKey[]).map((key) => (
+          {(["name", "soberDate", "role"] as SortKey[]).map((key) => (
             <button
               key={key}
               onClick={() => setSortBy(key)}
@@ -213,13 +278,13 @@ export default function PrintContacts() {
                   : "bg-card text-muted-foreground border-border hover:text-foreground"
               }`}
             >
-              {key === "cleanDate" ? "Clean date" : key.charAt(0).toUpperCase() + key.slice(1)}
+              {key === "soberDate" ? "Sober date" : key.charAt(0).toUpperCase() + key.slice(1)}
             </button>
           ))}
         </div>
       </div>
 
-      {/* Result count — screen only */}
+      {/* Result count */}
       <p className="print:hidden text-sm text-muted-foreground mb-4">
         {peopleQuery.isLoading ? "Loading…" : `${filtered.length} of ${peopleQuery.data?.length ?? 0} members`}
       </p>
@@ -231,15 +296,13 @@ export default function PrintContacts() {
           Printed {new Date().toLocaleDateString("en-US", { weekday: "long", year: "numeric", month: "long", day: "numeric" })}
           {activeFiltersCount > 0 && " · Filtered"}
           {roleFilter !== "all" && ` · Role: ${roleFilter}`}
-          {minYears && ` · Min ${minYears} yrs clean`}
-          {maxYears && ` · Max ${maxYears} yrs clean`}
-          {cleanFrom && ` · Clean from ${formatDate(cleanFrom)}`}
-          {cleanTo && ` · Clean to ${formatDate(cleanTo)}`}
+          {genderFilter !== "all" && ` · ${genderFilter === "Male" ? "Men" : "Women"} only`}
+          {fiveYearsPlus && " · 5+ years sober"}
+          {minYears && ` · Min ${minYears} yrs sober`}
         </p>
         <p className="text-sm text-gray-500 font-medium mt-1">{filtered.length} member{filtered.length !== 1 ? "s" : ""}</p>
       </div>
 
-      {/* Table */}
       {peopleQuery.isLoading ? (
         <div className="space-y-2 print:hidden">
           {[1, 2, 3, 4, 5].map((i) => <Skeleton key={i} className="h-10 w-full" />)}
@@ -250,48 +313,26 @@ export default function PrintContacts() {
           <p className="text-sm mt-1">Try adjusting the criteria above</p>
         </div>
       ) : (
-        <div className="overflow-x-auto">
-          <table className="w-full border-collapse text-sm print:text-[10px]">
-            <thead>
-              <tr className="bg-sidebar text-sidebar-foreground print:bg-gray-800 print:text-white">
-                <th className="border border-border print:border-gray-300 px-3 py-2 text-left font-semibold">Name</th>
-                <th className="border border-border print:border-gray-300 px-3 py-2 text-left font-semibold">Role</th>
-                <th className="border border-border print:border-gray-300 px-3 py-2 text-left font-semibold">Phone</th>
-                <th className="border border-border print:border-gray-300 px-3 py-2 text-left font-semibold">Email</th>
-                <th className="border border-border print:border-gray-300 px-3 py-2 text-left font-semibold">Clean Date</th>
-                <th className="border border-border print:border-gray-300 px-3 py-2 text-left font-semibold">Years Clean</th>
-              </tr>
-            </thead>
-            <tbody>
-              {filtered.map((p, i) => {
-                const yrs = yearsClean(p.cleanDate ?? null);
-                return (
-                  <tr
-                    key={p.id}
-                    className={i % 2 === 0 ? "bg-card print:bg-white" : "bg-muted/40 print:bg-gray-50"}
-                  >
-                    <td className="border border-border print:border-gray-300 px-3 py-2 font-medium text-foreground">{p.name}</td>
-                    <td className="border border-border print:border-gray-300 px-3 py-2 text-muted-foreground">{p.role}</td>
-                    <td className="border border-border print:border-gray-300 px-3 py-2 text-muted-foreground font-mono">
-                      {p.phone ?? "—"}
-                    </td>
-                    <td className="border border-border print:border-gray-300 px-3 py-2 text-muted-foreground">
-                      {p.email ?? "—"}
-                    </td>
-                    <td className="border border-border print:border-gray-300 px-3 py-2 text-muted-foreground">
-                      {formatDate(p.cleanDate ?? null)}
-                    </td>
-                    <td className="border border-border print:border-gray-300 px-3 py-2 text-muted-foreground">
-                      {yrs !== null ? (
-                        <span className="font-medium text-foreground">{formatYears(yrs)}</span>
-                      ) : "—"}
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
-        </div>
+        <>
+          {/* Screen: single table */}
+          <div className="print:hidden">
+            {renderTable(filtered)}
+          </div>
+
+          {/* Print: men's list, then women's list if gender filter is "all", else just the filtered list */}
+          <div className="hidden print:block">
+            {genderFilter === "all" && menOnly.length > 0 && womenOnly.length > 0 ? (
+              <>
+                {renderTable(menOnly, "Men's List")}
+                {renderTable(womenOnly, "Women's List")}
+                {filtered.filter((p: any) => p.gender !== "Male" && p.gender !== "Female").length > 0 &&
+                  renderTable(filtered.filter((p: any) => p.gender !== "Male" && p.gender !== "Female"), "Other Members")}
+              </>
+            ) : (
+              renderTable(filtered)
+            )}
+          </div>
+        </>
       )}
 
       <style>{`

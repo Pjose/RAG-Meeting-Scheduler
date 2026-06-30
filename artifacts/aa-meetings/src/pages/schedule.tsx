@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Link } from "wouter";
 import { Search, Filter, MapPin, Globe, Users, Clock, ChevronDown, X, List, LayoutGrid } from "lucide-react";
 import { useGetSchedule, useListMeetings, getGetScheduleQueryKey, getListMeetingsQueryKey } from "@workspace/api-client-react";
+import { formatTime } from "@/lib/constants";
 import { PublicLayout } from "@/components/layout";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
@@ -298,7 +299,7 @@ function GridMeetingCard({ meeting }: { meeting: any }) {
       </p>
       <div className="flex items-center gap-1 text-[10px] text-muted-foreground">
         <Clock size={9} className="shrink-0" />
-        <span className="truncate">{meeting.startTime}</span>
+        <span className="truncate">{formatTime(meeting.startTime)}</span>
       </div>
       <div className="flex items-center gap-1 mt-0.5 flex-wrap">
         <span className={`inline-flex items-center gap-0.5 text-[10px] px-1 py-px rounded ${typeColor(meeting.type)}`}>
@@ -351,7 +352,7 @@ function MeetingCard({ meeting }: { meeting: any }) {
           <div className="flex items-center gap-4 text-xs text-muted-foreground flex-wrap">
             <span className="flex items-center gap-1">
               <Clock size={11} />
-              {meeting.startTime} – {meeting.endTime}
+              {formatTime(meeting.startTime)} – {formatTime(meeting.endTime)}
             </span>
             {meeting.location && (
               <span className="flex items-center gap-1 truncate max-w-48">

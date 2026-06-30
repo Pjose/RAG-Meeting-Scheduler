@@ -107,8 +107,8 @@ export default function AdminPeople() {
                         {p.email}
                       </span>
                     )}
-                    {p.cleanDate && (
-                      <span className="text-muted-foreground/60">Clean: {p.cleanDate}</span>
+                    {(p as any).soberDate && (
+                      <span className="text-muted-foreground/60">Sober: {(p as any).soberDate}</span>
                     )}
                   </div>
                 </div>

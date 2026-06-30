@@ -1,5 +1,5 @@
 import { Link, useLocation } from "wouter";
-import { Calendar, Users, LayoutDashboard, Menu, X, ChevronRight, Printer, Building2, LogOut } from "lucide-react";
+import { Calendar, Users, LayoutDashboard, Menu, X, ChevronRight, Printer, Building2, LogOut, Star } from "lucide-react";
 import { useState, useEffect } from "react";
 import { cn } from "@/lib/utils";
 import { useAuth, useLogout } from "@/lib/auth";
@@ -66,6 +66,7 @@ const adminNav = [
   { href: "/admin/meetings", label: "Meetings", icon: Calendar },
   { href: "/admin/hi-meetings", label: "H&I", icon: Building2 },
   { href: "/admin/people", label: "People", icon: Users },
+  { href: "/admin/trusted-servants", label: "Trusted Servants", icon: Star },
 ];
 
 const printNav = [

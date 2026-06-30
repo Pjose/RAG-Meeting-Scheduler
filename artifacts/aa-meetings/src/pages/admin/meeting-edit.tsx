@@ -26,29 +26,11 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Separator } from "@/components/ui/separator";
 import { useToast } from "@/hooks/use-toast";
 
-const DAYS = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
-const TYPES = ["Open", "Closed", "Beginner", "Other"];
-const FORMATS = ["Book Study", "Call-Up", "Discussion", "Step Speaker", "Step Study", "Story Speaker", "Other"];
-const INTERACTIONS = ["In-Person", "Online", "Hybrid"];
-const LANGUAGES = ["English", "Spanish", "French", "Portuguese", "Other"];
-const LITERATURE = [
-  "12 & 12",
-  "A.A. Comes Of Age",
-  "A.A. In Prison: Inmate To Inmate",
-  "As Bill Sees It",
-  "Big Book",
-  "Plain Language Big Book",
-  "Came To Believe...",
-  "Daily Reflections",
-  "Dr. Bob And The Good Oldtimers",
-  "Experience, Strength And Hope",
-  "Grapevine",
-  "Living Sober",
-  "Our Great Responsibility",
-  "Pass It On",
-  "Other",
-];
-const ROLES = ["Chairperson", "Co-Chairperson", "Secretary", "Treasurer", "GSR", "Intergroup", "PI", "H&I", "Communication", "Unity", "Meeting Co-Chair", "Member", "Alternate GSR", "Alternate Treasurer", "Alternate Intergroup", "Assistant Communication"];
+import { DAYS, MEETING_TYPES, MEETING_FORMATS, MEETING_MODES, LANGUAGES, LITERATURE, ASSIGNMENT_ROLES } from "@/lib/constants";
+const TYPES = MEETING_TYPES;
+const FORMATS = MEETING_FORMATS;
+const INTERACTIONS = MEETING_MODES;
+const ROLES = ASSIGNMENT_ROLES;
 
 const formSchema = z.object({
   name: z.string().min(1, "Name is required"),

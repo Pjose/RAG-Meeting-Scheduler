@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Link } from "wouter";
 import { Plus, Pencil, Trash2, Search, MapPin, Clock } from "lucide-react";
 import { useListHiMeetings, useDeleteHiMeeting, getListHiMeetingsQueryKey } from "@workspace/api-client-react";
+import { formatTime } from "@/lib/constants";
 import { useQueryClient } from "@tanstack/react-query";
 import { AdminLayout } from "@/components/layout";
 import { Button } from "@/components/ui/button";
@@ -94,7 +95,7 @@ export default function AdminHiMeetings() {
                   <div className="flex items-center gap-3 text-xs text-muted-foreground flex-wrap">
                     <span className="flex items-center gap-1">
                       <Clock size={11} />
-                      {m.day} {m.startTime}–{m.endTime}
+                      {m.day} {formatTime(m.startTime)}–{formatTime(m.endTime)}
                     </span>
                     {m.location && (
                       <span className="flex items-center gap-1 truncate max-w-48">
