@@ -3,3 +3,4 @@ export * from "./people";
 export * from "./assignments";
 export * from "./hi-meetings";
 export * from "./hi-assignments";
+export * from "./trusted-servants";

@@ -1,6 +1,6 @@
 import { Router, type IRouter } from "express";
 import { eq, ilike, and, type SQL } from "drizzle-orm";
-import { db, peopleTable, meetingsTable, assignmentsTable } from "@workspace/db";
+import { db, peopleTable, meetingsTable, assignmentsTable, hiAssignmentsTable, hiMeetingsTable, trustedServantsTable } from "@workspace/db";
 import {
   ListPeopleQueryParams,
   CreatePersonBody,
@@ -78,10 +78,40 @@ router.get("/people/:id", async (req, res): Promise<void> => {
       language: meetingsTable.language,
       notes: meetingsTable.notes,
       createdAt: meetingsTable.createdAt,
+      assignedRole: assignmentsTable.assignedRole,
     })
     .from(assignmentsTable)
     .innerJoin(meetingsTable, eq(assignmentsTable.meetingId, meetingsTable.id))
     .where(eq(assignmentsTable.personId, person.id));
+
+  const hiMeetings = await db
+    .select({
+      id: hiMeetingsTable.id,
+      name: hiMeetingsTable.name,
+      day: hiMeetingsTable.day,
+      startTime: hiMeetingsTable.startTime,
+      endTime: hiMeetingsTable.endTime,
+      location: hiMeetingsTable.location,
+      type: hiMeetingsTable.type,
+      format: hiMeetingsTable.format,
+      interaction: hiMeetingsTable.interaction,
+      createdAt: hiMeetingsTable.createdAt,
+      assignedRole: hiAssignmentsTable.assignedRole,
+    })
+    .from(hiAssignmentsTable)
+    .innerJoin(hiMeetingsTable, eq(hiAssignmentsTable.meetingId, hiMeetingsTable.id))
+    .where(eq(hiAssignmentsTable.personId, person.id));
+
+  const trustedServants = await db
+    .select({
+      id: trustedServantsTable.id,
+      title: trustedServantsTable.title,
+      description: trustedServantsTable.description,
+      termLength: trustedServantsTable.termLength,
+      startDate: trustedServantsTable.startDate,
+    })
+    .from(trustedServantsTable)
+    .where(eq(trustedServantsTable.memberId, person.id));
 
   res.json({
     ...formatPerson(person),
@@ -89,6 +119,11 @@ router.get("/people/:id", async (req, res): Promise<void> => {
       ...m,
       createdAt: m.createdAt.toISOString(),
     })),
+    hiMeetings: hiMeetings.map((m) => ({
+      ...m,
+      createdAt: m.createdAt.toISOString(),
+    })),
+    trustedServants,
   });
 });
 
@@ -146,7 +181,8 @@ function formatPerson(p: typeof peopleTable.$inferSelect) {
     role: p.role,
     phone: p.phone,
     email: p.email,
-    cleanDate: p.cleanDate,
+    gender: p.gender,
+    soberDate: p.soberDate,
     createdAt: p.createdAt.toISOString(),
   };
 }

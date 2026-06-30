@@ -6,6 +6,7 @@ import peopleRouter from "./people";
 import scheduleRouter from "./schedule";
 import hiMeetingsRouter from "./hi-meetings";
 import hiScheduleRouter from "./hi-schedule";
+import trustedServantsRouter from "./trusted-servants";
 
 const router: IRouter = Router();
 
@@ -27,5 +28,6 @@ router.use(peopleRouter);
 router.use(scheduleRouter);
 router.use(hiMeetingsRouter);
 router.use(hiScheduleRouter);
+router.use(trustedServantsRouter);
 
 export default router;

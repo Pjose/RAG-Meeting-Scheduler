@@ -535,6 +535,93 @@ paths:
               schema:
                 $ref: "#/components/schemas/WeeklySchedule"
 
+  /trusted-servants:
+    get:
+      operationId: listTrustedServants
+      tags: [trusted-servants]
+      summary: List all trusted servant positions
+      responses:
+        "200":
+          description: List of trusted servant positions
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/TrustedServant"
+    post:
+      operationId: createTrustedServant
+      tags: [trusted-servants]
+      summary: Create a trusted servant position
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/TrustedServantInput"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TrustedServant"
+
+  /trusted-servants/{id}:
+    get:
+      operationId: getTrustedServant
+      tags: [trusted-servants]
+      summary: Get a single trusted servant position
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Trusted servant position
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TrustedServant"
+    patch:
+      operationId: updateTrustedServant
+      tags: [trusted-servants]
+      summary: Update a trusted servant position
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/TrustedServantInput"
+      responses:
+        "200":
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TrustedServant"
+    delete:
+      operationId: deleteTrustedServant
+      tags: [trusted-servants]
+      summary: Delete a trusted servant position
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+
 components:
   schemas:
     HealthStatus:
@@ -694,7 +781,9 @@ components:
           type: ["string", "null"]
         email:
           type: ["string", "null"]
-        cleanDate:
+        gender:
+          type: ["string", "null"]
+        soberDate:
           type: ["string", "null"]
         createdAt:
           type: string
@@ -711,7 +800,9 @@ components:
           type: string
         email:
           type: string
-        cleanDate:
+        gender:
+          type: string
+        soberDate:
           type: string
 
     PersonUpdate:
@@ -725,12 +816,14 @@ components:
           type: string
         email:
           type: string
-        cleanDate:
+        gender:
+          type: string
+        soberDate:
           type: string
 
     PersonDetail:
       type: object
-      required: [id, name, role, meetings]
+      required: [id, name, role, meetings, hiMeetings, trustedServants]
       properties:
         id:
           type: integer
@@ -742,7 +835,9 @@ components:
           type: ["string", "null"]
         email:
           type: ["string", "null"]
-        cleanDate:
+        gender:
+          type: ["string", "null"]
+        soberDate:
           type: ["string", "null"]
         createdAt:
           type: string
@@ -750,6 +845,65 @@ components:
           type: array
           items:
             $ref: "#/components/schemas/Meeting"
+        hiMeetings:
+          type: array
+          items:
+            $ref: "#/components/schemas/Meeting"
+        trustedServants:
+          type: array
+          items:
+            $ref: "#/components/schemas/TrustedServantItem"
+
+    TrustedServantItem:
+      type: object
+      required: [id, title]
+      properties:
+        id:
+          type: integer
+        title:
+          type: string
+        description:
+          type: ["string", "null"]
+        termLength:
+          type: ["string", "null"]
+        startDate:
+          type: ["string", "null"]
+
+    TrustedServant:
+      type: object
+      required: [id, title]
+      properties:
+        id:
+          type: integer
+        title:
+          type: string
+        description:
+          type: ["string", "null"]
+        memberId:
+          type: ["integer", "null"]
+        memberName:
+          type: ["string", "null"]
+        termLength:
+          type: ["string", "null"]
+        startDate:
+          type: ["string", "null"]
+        createdAt:
+          type: string
+
+    TrustedServantInput:
+      type: object
+      required: [title]
+      properties:
+        title:
+          type: string
+        description:
+          type: string
+        memberId:
+          type: integer
+        termLength:
+          type: string
+        startDate:
+          type: string
 
     PersonAssignment:
       type: object

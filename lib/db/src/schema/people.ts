@@ -8,7 +8,8 @@ export const peopleTable = pgTable("people", {
   role: text("role").notNull(),
   phone: text("phone"),
   email: text("email"),
-  cleanDate: text("clean_date"),
+  gender: text("gender"),
+  soberDate: text("sober_date"),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
 });
 
