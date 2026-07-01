@@ -25,7 +25,10 @@ export function PublicLayout({ children }: { children: React.ReactNode }) {
         <div className="max-w-5xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
           <Link href="/" className="flex items-center gap-3 group">
             <div className="w-8 h-8 rounded bg-primary flex items-center justify-center shrink-0">
-              <span className="text-primary-foreground font-bold text-sm font-serif">AA</span>
+              <svg viewBox="0 0 32 32" width="28" height="28" aria-hidden="true">
+                <circle cx="16" cy="16" r="13" fill="none" stroke="#c49a3c" strokeWidth="2" />
+                <polygon points="16,7 25,23 7,23" fill="none" stroke="#c49a3c" strokeWidth="2" strokeLinejoin="round" />
+              </svg>
             </div>
             <div>
               <span className="font-semibold text-foreground text-sm tracking-tight">Meeting Directory</span>
@@ -151,7 +154,10 @@ export function AdminLayout({ children }: { children: React.ReactNode }) {
       >
         <div className="h-16 flex items-center gap-3 px-5 border-b border-sidebar-border shrink-0">
           <div className="w-8 h-8 rounded bg-sidebar-primary flex items-center justify-center shrink-0">
-            <span className="text-sidebar-primary-foreground font-bold text-sm font-serif">AA</span>
+            <svg viewBox="0 0 32 32" width="28" height="28" aria-hidden="true">
+              <circle cx="16" cy="16" r="13" fill="none" stroke="#c49a3c" strokeWidth="2" />
+              <polygon points="16,7 25,23 7,23" fill="none" stroke="#c49a3c" strokeWidth="2" strokeLinejoin="round" />
+            </svg>
           </div>
           <div>
             <span className="font-semibold text-sidebar-foreground text-sm">Admin Panel</span>
