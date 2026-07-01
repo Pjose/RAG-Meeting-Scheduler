@@ -20,6 +20,7 @@ import PrintHiSchedule from "@/pages/admin/print-hi-schedule";
 import AdminLogin from "@/pages/admin/login";
 import AdminTrustedServants from "@/pages/admin/trusted-servants";
 import AdminTrustedServantEdit from "@/pages/admin/trusted-servant-edit";
+import PrintTrustedServants from "@/pages/admin/print-trusted-servants";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -54,6 +55,7 @@ function Router() {
       <Route path="/admin/print/schedule" component={PrintSchedule} />
       <Route path="/admin/print/contacts" component={PrintContacts} />
       <Route path="/admin/print/hi-schedule" component={PrintHiSchedule} />
+      <Route path="/admin/print/trusted-servants" component={PrintTrustedServants} />
       <Route component={NotFound} />
     </Switch>
   );

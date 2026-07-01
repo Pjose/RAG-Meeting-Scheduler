@@ -10,9 +10,11 @@ export const peopleTable = pgTable("people", {
   email: text("email"),
   gender: text("gender"),
   soberDate: text("sober_date"),
+  username: text("username").unique(),
+  passwordHash: text("password_hash"),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
 });
 
-export const insertPersonSchema = createInsertSchema(peopleTable).omit({ id: true, createdAt: true });
+export const insertPersonSchema = createInsertSchema(peopleTable).omit({ id: true, createdAt: true, username: true, passwordHash: true });
 export type InsertPerson = z.infer<typeof insertPersonSchema>;
 export type Person = typeof peopleTable.$inferSelect;

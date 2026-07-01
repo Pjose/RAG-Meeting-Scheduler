@@ -20,6 +20,11 @@ router.use((req, res, next): void => {
     res.status(401).json({ error: "Unauthorized" });
     return;
   }
+  const role = req.session.role;
+  if (role !== "Admin" && role !== "Coordinator") {
+    res.status(403).json({ error: "Insufficient permissions" });
+    return;
+  }
   next();
 });
 

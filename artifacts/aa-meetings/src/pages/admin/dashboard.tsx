@@ -4,9 +4,12 @@ import { useGetStats } from "@workspace/api-client-react";
 import { AdminLayout } from "@/components/layout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useAuth, isAdmin } from "@/lib/auth";
 
 export default function AdminDashboard() {
   const { data: stats, isLoading } = useGetStats();
+  const { data: auth } = useAuth();
+  const adminRole = isAdmin(auth?.role);
 
   return (
     <AdminLayout>
@@ -32,13 +35,15 @@ export default function AdminDashboard() {
             href="/admin/hi-meetings"
             loading={isLoading}
           />
-          <StatCard
-            label="People &amp; Contacts"
-            value={stats?.totalPeople}
-            icon={<Users size={18} />}
-            href="/admin/people"
-            loading={isLoading}
-          />
+          {adminRole && (
+            <StatCard
+              label="People &amp; Contacts"
+              value={stats?.totalPeople}
+              icon={<Users size={18} />}
+              href="/admin/people"
+              loading={isLoading}
+            />
+          )}
         </div>
 
         {/* Breakdowns */}
@@ -58,7 +63,7 @@ export default function AdminDashboard() {
         <div className="mt-8 grid grid-cols-1 sm:grid-cols-3 gap-4">
           <QuickAction href="/admin/meetings/new" label="Add a Meeting" sub="Schedule a new AA meeting" icon={<Calendar size={18} />} />
           <QuickAction href="/admin/hi-meetings/new" label="Add H&amp;I Commitment" sub="Add a new H&amp;I meeting" icon={<Building2 size={18} />} />
-          <QuickAction href="/admin/people/new" label="Add a Person" sub="Add a contact or chairperson" icon={<Users size={18} />} />
+          {adminRole && <QuickAction href="/admin/people/new" label="Add a Person" sub="Add a contact or chairperson" icon={<Users size={18} />} />}
         </div>
       </div>
     </AdminLayout>

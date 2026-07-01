@@ -2,7 +2,7 @@ import { Link, useLocation } from "wouter";
 import { Calendar, Users, LayoutDashboard, Menu, X, ChevronRight, Printer, Building2, LogOut, Star } from "lucide-react";
 import { useState, useEffect } from "react";
 import { cn } from "@/lib/utils";
-import { useAuth, useLogout } from "@/lib/auth";
+import { useAuth, useLogout, canManage, isAdmin } from "@/lib/auth";
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -73,6 +73,7 @@ const printNav = [
   { href: "/admin/print/schedule", label: "Weekly Schedule", icon: Printer },
   { href: "/admin/print/hi-schedule", label: "H&I Schedule", icon: Printer },
   { href: "/admin/print/contacts", label: "Contact List", icon: Printer },
+  { href: "/admin/print/trusted-servants", label: "Trusted Servants", icon: Printer },
 ];
 
 export function AdminLayout({ children }: { children: React.ReactNode }) {
@@ -82,8 +83,12 @@ export function AdminLayout({ children }: { children: React.ReactNode }) {
   const logout = useLogout();
 
   useEffect(() => {
-    if (!authLoading && auth?.authenticated === false) {
-      setLocation("/admin/login");
+    if (!authLoading) {
+      if (!auth?.authenticated) {
+        setLocation("/admin/login");
+      } else if (auth.role === "Member" || auth.role === "Guest") {
+        setLocation("/");
+      }
     }
   }, [authLoading, auth, setLocation]);
 
@@ -95,7 +100,11 @@ export function AdminLayout({ children }: { children: React.ReactNode }) {
     );
   }
 
-  if (!auth?.authenticated) return null;
+  if (!auth?.authenticated || auth.role === "Member" || auth.role === "Guest") return null;
+
+  const visibleAdminNav = isAdmin(auth.role)
+    ? adminNav
+    : adminNav.filter((n) => n.href !== "/admin/people");
 
   async function handleLogout() {
     await logout();
@@ -121,7 +130,7 @@ export function AdminLayout({ children }: { children: React.ReactNode }) {
           </div>
         </div>
         <nav className="flex-1 py-4 px-3 space-y-0.5 overflow-y-auto">
-          {adminNav.map(({ href, label, icon: Icon }) => {
+          {visibleAdminNav.map(({ href, label, icon: Icon }) => {
             const active = location === href || (href !== "/admin" && location.startsWith(href));
             return (
               <Link

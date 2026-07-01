@@ -27,7 +27,8 @@ export default function AdminLogin() {
         credentials: "include",
       });
       if (res.ok) {
-        queryClient.setQueryData(AUTH_QUERY_KEY, { authenticated: true });
+        const data = await res.json() as { ok: boolean; role?: string };
+        queryClient.setQueryData(AUTH_QUERY_KEY, { authenticated: true, role: data.role ?? "Admin" });
         setLocation("/admin");
       } else {
         const data = await res.json() as { error?: string };

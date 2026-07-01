@@ -5,6 +5,7 @@ import { formatTime } from "@/lib/constants";
 import { PublicLayout } from "@/components/layout";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useAuth, canManage } from "@/lib/auth";
 
 function typeColor(type: string) {
   if (type === "Open") return "border-primary/40 text-primary bg-primary/8";
@@ -13,7 +14,7 @@ function typeColor(type: string) {
   return "border-border text-muted-foreground";
 }
 
-function ContactCard({ person }: { person: any }) {
+function ContactCard({ person, showContact }: { person: any; showContact: boolean }) {
   return (
     <div className="flex items-start gap-3 p-3 bg-muted/50 rounded-lg border border-border">
       <div className="w-9 h-9 rounded-full bg-primary/10 flex items-center justify-center shrink-0 text-primary font-semibold text-sm">
@@ -22,23 +23,25 @@ function ContactCard({ person }: { person: any }) {
       <div className="min-w-0 flex-1">
         <p className="font-medium text-sm text-foreground">{person.name}</p>
         <p className="text-xs text-muted-foreground">{person.assignedRole || person.role}</p>
-        <div className="mt-1.5 flex flex-wrap gap-2">
-          {person.phone && (
-            <a href={`tel:${person.phone}`} className="inline-flex items-center gap-1 text-xs text-primary hover:underline">
-              <Phone size={11} />
-              Call
-            </a>
-          )}
-          {person.email && (
-            <a href={`mailto:${person.email}`} className="inline-flex items-center gap-1 text-xs text-primary hover:underline">
-              <Mail size={11} />
-              Email
-            </a>
-          )}
-          {!person.phone && !person.email && (
-            <span className="text-xs text-muted-foreground italic">Contact info not listed</span>
-          )}
-        </div>
+        {showContact && (
+          <div className="mt-1.5 flex flex-wrap gap-2">
+            {person.phone && (
+              <a href={`tel:${person.phone}`} className="inline-flex items-center gap-1 text-xs text-primary hover:underline">
+                <Phone size={11} />
+                Call
+              </a>
+            )}
+            {person.email && (
+              <a href={`mailto:${person.email}`} className="inline-flex items-center gap-1 text-xs text-primary hover:underline">
+                <Mail size={11} />
+                Email
+              </a>
+            )}
+            {!person.phone && !person.email && (
+              <span className="text-xs text-muted-foreground italic">Contact info not listed</span>
+            )}
+          </div>
+        )}
       </div>
     </div>
   );
@@ -51,6 +54,8 @@ export default function HiMeetingDetail() {
   const { data: meeting, isLoading } = useGetHiMeeting(id, {
     query: { enabled: !!id, queryKey: getGetHiMeetingQueryKey(id) },
   });
+  const { data: auth } = useAuth();
+  const showContact = canManage(auth?.role);
 
   return (
     <PublicLayout>
@@ -125,7 +130,7 @@ export default function HiMeetingDetail() {
                 <h2 className="font-semibold text-sm text-foreground mb-3">H&amp;I Contacts &amp; Volunteers</h2>
                 <div className="space-y-2">
                   {meeting.people.map((person: any) => (
-                    <ContactCard key={person.id} person={person} />
+                    <ContactCard key={person.id} person={person} showContact={showContact} />
                   ))}
                 </div>
               </div>

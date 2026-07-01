@@ -1,5 +1,6 @@
 import { Router, type IRouter } from "express";
 import { eq, ilike, and, type SQL } from "drizzle-orm";
+import bcrypt from "bcryptjs";
 import { db, peopleTable, meetingsTable, assignmentsTable, hiAssignmentsTable, hiMeetingsTable, trustedServantsTable } from "@workspace/db";
 import {
   ListPeopleQueryParams,
@@ -115,6 +116,8 @@ router.get("/people/:id", async (req, res): Promise<void> => {
 
   res.json({
     ...formatPerson(person),
+    hasLogin: !!(person.username && person.passwordHash),
+    username: person.username ?? null,
     meetings: meetings.map((m) => ({
       ...m,
       createdAt: m.createdAt.toISOString(),
@@ -172,6 +175,66 @@ router.delete("/people/:id", async (req, res): Promise<void> => {
   }
 
   res.sendStatus(204);
+});
+
+router.post("/people/:id/set-password", async (req, res): Promise<void> => {
+  if (req.session?.role !== "Admin") {
+    res.status(403).json({ error: "Admin access required" });
+    return;
+  }
+
+  const id = parseInt(req.params.id, 10);
+  if (isNaN(id)) {
+    res.status(400).json({ error: "Invalid id" });
+    return;
+  }
+
+  const { username, password } = req.body as { username?: string; password?: string };
+
+  if (!username || !password) {
+    res.status(400).json({ error: "Username and password are required." });
+    return;
+  }
+
+  const hash = await bcrypt.hash(password, 12);
+  const [person] = await db
+    .update(peopleTable)
+    .set({ username, passwordHash: hash })
+    .where(eq(peopleTable.id, id))
+    .returning();
+
+  if (!person) {
+    res.status(404).json({ error: "Person not found" });
+    return;
+  }
+
+  res.json({ ok: true });
+});
+
+router.delete("/people/:id/set-password", async (req, res): Promise<void> => {
+  if (req.session?.role !== "Admin") {
+    res.status(403).json({ error: "Admin access required" });
+    return;
+  }
+
+  const id = parseInt(req.params.id, 10);
+  if (isNaN(id)) {
+    res.status(400).json({ error: "Invalid id" });
+    return;
+  }
+
+  const [person] = await db
+    .update(peopleTable)
+    .set({ username: null, passwordHash: null })
+    .where(eq(peopleTable.id, id))
+    .returning();
+
+  if (!person) {
+    res.status(404).json({ error: "Person not found" });
+    return;
+  }
+
+  res.json({ ok: true });
 });
 
 function formatPerson(p: typeof peopleTable.$inferSelect) {

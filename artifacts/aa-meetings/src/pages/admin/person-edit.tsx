@@ -1,6 +1,6 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useRoute, useLocation } from "wouter";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, KeyRound, Trash2 } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -20,6 +20,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/hooks/use-toast";
 import { PERSON_ROLES, GENDERS, formatTime } from "@/lib/constants";
+import { useAuth, isAdmin } from "@/lib/auth";
 
 const formSchema = z.object({
   name: z.string().min(1, "Name is required"),
@@ -41,6 +42,13 @@ export default function AdminPersonEdit() {
   const [, setLocation] = useLocation();
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const { data: authData } = useAuth();
+  const adminUser = isAdmin(authData?.role);
+
+  const [loginUsername, setLoginUsername] = useState("");
+  const [loginPassword, setLoginPassword] = useState("");
+  const [loginConfirm, setLoginConfirm] = useState("");
+  const [loginSaving, setLoginSaving] = useState(false);
 
   const { data: person, isLoading } = useGetPerson(id, {
     query: { enabled: !!id && !isNew, queryKey: getGetPersonQueryKey(id) },
@@ -104,6 +112,53 @@ export default function AdminPersonEdit() {
   const meetings = (person as any)?.meetings ?? [];
   const hiMeetings = (person as any)?.hiMeetings ?? [];
   const trustedServants = (person as any)?.trustedServants ?? [];
+  const hasLogin = !!(person as any)?.hasLogin;
+  const currentUsername = (person as any)?.username ?? "";
+
+  const handleSetLogin = async () => {
+    if (!loginPassword || loginPassword !== loginConfirm) {
+      toast({ title: "Passwords don't match", variant: "destructive" });
+      return;
+    }
+    if (!loginUsername) {
+      toast({ title: "Username is required", variant: "destructive" });
+      return;
+    }
+    setLoginSaving(true);
+    try {
+      const res = await fetch(`/api/people/${id}/set-password`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ username: loginUsername, password: loginPassword }),
+      });
+      if (!res.ok) {
+        const data = await res.json() as { error?: string };
+        throw new Error(data.error ?? "Failed to set login");
+      }
+      queryClient.invalidateQueries({ queryKey: getGetPersonQueryKey(id) });
+      toast({ title: "Login credentials saved" });
+      setLoginPassword(""); setLoginConfirm("");
+    } catch (err: any) {
+      toast({ title: err.message ?? "Error", variant: "destructive" });
+    } finally {
+      setLoginSaving(false);
+    }
+  };
+
+  const handleRemoveLogin = async () => {
+    if (!confirm("Remove login access for this person?")) return;
+    setLoginSaving(true);
+    try {
+      await fetch(`/api/people/${id}/set-password`, { method: "DELETE" });
+      queryClient.invalidateQueries({ queryKey: getGetPersonQueryKey(id) });
+      toast({ title: "Login access removed" });
+      setLoginUsername("");
+    } catch {
+      toast({ title: "Error removing login", variant: "destructive" });
+    } finally {
+      setLoginSaving(false);
+    }
+  };
 
   return (
     <AdminLayout>
@@ -248,6 +303,67 @@ export default function AdminPersonEdit() {
                   </div>
                 </div>
               ))}
+            </div>
+          </div>
+        )}
+
+        {/* Login Account (Admin only) */}
+        {!isNew && adminUser && (
+          <div className="mt-4 bg-card border border-card-border rounded-xl p-5">
+            <div className="flex items-center gap-2 mb-4">
+              <KeyRound size={15} className="text-primary" />
+              <h2 className="font-semibold text-sm text-foreground">Login Account</h2>
+              {hasLogin && (
+                <span className="text-xs bg-primary/10 text-primary px-2 py-0.5 rounded-full font-medium ml-auto">
+                  Active · {currentUsername}
+                </span>
+              )}
+            </div>
+            <div className="space-y-3">
+              <div className="space-y-1.5">
+                <label className="text-xs font-medium text-muted-foreground">Username</label>
+                <Input
+                  value={loginUsername || currentUsername}
+                  onChange={(e) => setLoginUsername(e.target.value)}
+                  placeholder="e.g. john.s"
+                  className="h-8 text-sm"
+                />
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div className="space-y-1.5">
+                  <label className="text-xs font-medium text-muted-foreground">New Password</label>
+                  <Input
+                    type="password"
+                    value={loginPassword}
+                    onChange={(e) => setLoginPassword(e.target.value)}
+                    placeholder="New password"
+                    className="h-8 text-sm"
+                  />
+                </div>
+                <div className="space-y-1.5">
+                  <label className="text-xs font-medium text-muted-foreground">Confirm Password</label>
+                  <Input
+                    type="password"
+                    value={loginConfirm}
+                    onChange={(e) => setLoginConfirm(e.target.value)}
+                    placeholder="Confirm"
+                    className="h-8 text-sm"
+                  />
+                </div>
+              </div>
+              <div className="flex gap-2 pt-1">
+                <Button size="sm" onClick={handleSetLogin} disabled={loginSaving} className="gap-1.5">
+                  <KeyRound size={13} />
+                  {hasLogin ? "Update Login" : "Set Login"}
+                </Button>
+                {hasLogin && (
+                  <Button size="sm" variant="outline" onClick={handleRemoveLogin} disabled={loginSaving}
+                    className="gap-1.5 text-destructive border-destructive/30 hover:bg-destructive/10">
+                    <Trash2 size={13} />
+                    Remove Login
+                  </Button>
+                )}
+              </div>
             </div>
           </div>
         )}
