@@ -10,7 +10,15 @@ interface LayoutProps {
 }
 
 export function PublicLayout({ children }: { children: React.ReactNode }) {
-  const [location] = useLocation();
+  const [location, setLocation] = useLocation();
+  const { data: auth } = useAuth();
+  const logout = useLogout();
+
+  async function handleLogout() {
+    await logout();
+    setLocation("/");
+  }
+
   return (
     <div className="min-h-screen bg-background">
       <header className="border-b border-border bg-card shadow-xs sticky top-0 z-50">
@@ -47,12 +55,22 @@ export function PublicLayout({ children }: { children: React.ReactNode }) {
             >
               H&amp;I
             </Link>
-            <Link
-              href="/admin"
-              className="text-xs text-muted-foreground hover:text-foreground transition-colors px-3 py-1.5 rounded border border-border hover:border-border/80 hover:bg-muted"
-            >
-              Admin
-            </Link>
+            {auth?.authenticated ? (
+              <button
+                onClick={handleLogout}
+                className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors px-3 py-1.5 rounded border border-border hover:border-border/80 hover:bg-muted"
+              >
+                <LogOut size={12} />
+                Sign Out
+              </button>
+            ) : (
+              <Link
+                href="/admin"
+                className="text-xs text-muted-foreground hover:text-foreground transition-colors px-3 py-1.5 rounded border border-border hover:border-border/80 hover:bg-muted"
+              >
+                Admin
+              </Link>
+            )}
           </div>
         </div>
       </header>
