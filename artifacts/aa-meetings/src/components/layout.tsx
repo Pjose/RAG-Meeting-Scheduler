@@ -153,10 +153,10 @@ export function AdminLayout({ children }: { children: React.ReactNode }) {
         data-testid="admin-sidebar"
       >
         <div className="h-16 flex items-center gap-3 px-5 border-b border-sidebar-border shrink-0">
-          <div className="w-8 h-8 rounded bg-sidebar-primary flex items-center justify-center shrink-0">
+          <div className="w-8 h-8 rounded flex items-center justify-center shrink-0" style={{ background: "#c49a3c" }}>
             <svg viewBox="0 0 32 32" width="28" height="28" aria-hidden="true">
-              <circle cx="16" cy="16" r="13" fill="none" stroke="#c49a3c" strokeWidth="2" />
-              <polygon points="16,7 25,23 7,23" fill="none" stroke="#c49a3c" strokeWidth="2" strokeLinejoin="round" />
+              <circle cx="16" cy="16" r="13" fill="none" stroke="#3b6d11" strokeWidth="2" />
+              <polygon points="16,7 25,23 7,23" fill="none" stroke="#3b6d11" strokeWidth="2" strokeLinejoin="round" />
             </svg>
           </div>
           <div>

@@ -45,10 +45,10 @@ export default function AdminLogin() {
     <div className="min-h-screen bg-background flex items-center justify-center p-4">
       <div className="w-full max-w-sm">
         <div className="text-center mb-8">
-          <div className="w-12 h-12 rounded-xl bg-primary flex items-center justify-center mx-auto mb-4">
+          <div className="w-12 h-12 rounded-xl flex items-center justify-center mx-auto mb-4" style={{ background: "#c49a3c" }}>
             <svg viewBox="0 0 32 32" width="36" height="36" aria-hidden="true">
-              <circle cx="16" cy="16" r="13" fill="none" stroke="#c49a3c" strokeWidth="2" />
-              <polygon points="16,7 25,23 7,23" fill="none" stroke="#c49a3c" strokeWidth="2" strokeLinejoin="round" />
+              <circle cx="16" cy="16" r="13" fill="none" stroke="#3b6d11" strokeWidth="2" />
+              <polygon points="16,7 25,23 7,23" fill="none" stroke="#3b6d11" strokeWidth="2" strokeLinejoin="round" />
             </svg>
           </div>
           <h1 className="text-xl font-semibold text-foreground font-serif">Admin Sign In</h1>

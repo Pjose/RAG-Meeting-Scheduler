@@ -15,10 +15,10 @@ export default function AdminDashboard() {
     <AdminLayout>
       <div className="max-w-4xl">
         <div className="mb-7 flex items-center gap-4">
-          <div className="w-11 h-11 rounded-xl bg-primary flex items-center justify-center shrink-0">
+          <div className="w-11 h-11 rounded-xl flex items-center justify-center shrink-0" style={{ background: "#c49a3c" }}>
             <svg viewBox="0 0 32 32" width="32" height="32" aria-hidden="true">
-              <circle cx="16" cy="16" r="13" fill="none" stroke="#c49a3c" strokeWidth="2" />
-              <polygon points="16,7 25,23 7,23" fill="none" stroke="#c49a3c" strokeWidth="2" strokeLinejoin="round" />
+              <circle cx="16" cy="16" r="13" fill="none" stroke="#3b6d11" strokeWidth="2" />
+              <polygon points="16,7 25,23 7,23" fill="none" stroke="#3b6d11" strokeWidth="2" strokeLinejoin="round" />
             </svg>
           </div>
           <div>
