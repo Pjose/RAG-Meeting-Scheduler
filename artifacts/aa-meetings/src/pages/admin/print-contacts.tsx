@@ -44,13 +44,25 @@ const ALL_COLUMNS: { key: ColKey; label: string }[] = [
   { key: "yearsSober", label: "Years Sober" },
 ];
 
+const MIN_YEARS_OPTIONS = [
+  { value: "any", label: "Any" },
+  { value: "1", label: "1+ years" },
+  { value: "2", label: "2+ years" },
+  { value: "3", label: "3+ years" },
+  { value: "4", label: "4+ years" },
+  { value: "5", label: "5+ years" },
+  { value: "7", label: "7+ years" },
+  { value: "10", label: "10+ years" },
+  { value: "15", label: "15+ years" },
+  { value: "20", label: "20+ years" },
+];
+
 export default function PrintContacts() {
-  const [minYears, setMinYears] = useState("");
+  const [minYears, setMinYears] = useState("any");
   const [soberFrom, setSoberFrom] = useState("");
   const [soberTo, setSoberTo] = useState("");
   const [roleFilter, setRoleFilter] = useState("all");
   const [genderFilter, setGenderFilter] = useState("all");
-  const [fiveYearsPlus, setFiveYearsPlus] = useState(false);
   const [sortBy, setSortBy] = useState<SortKey>("name");
   const [selectedCols, setSelectedCols] = useState<Set<ColKey>>(
     new Set(["role", "phone", "email", "soberDate", "yearsSober"])
@@ -76,10 +88,7 @@ export default function PrintContacts() {
 
         const yrs = yearsSober(p.soberDate);
 
-        if (fiveYearsPlus) {
-          if (yrs === null || yrs < 5) return false;
-        }
-        if (minYears !== "") {
+        if (minYears !== "any") {
           const min = parseFloat(minYears);
           if (yrs === null || yrs < min) return false;
         }
@@ -102,7 +111,7 @@ export default function PrintContacts() {
         if (sortBy === "role") return a.role.localeCompare(b.role);
         return 0;
       });
-  }, [peopleQuery.data, roleFilter, genderFilter, fiveYearsPlus, minYears, soberFrom, soberTo, sortBy]);
+  }, [peopleQuery.data, roleFilter, genderFilter, minYears, soberFrom, soberTo, sortBy]);
 
   const menOnly = filtered.filter((p: any) => p.gender === "Male");
   const womenOnly = filtered.filter((p: any) => p.gender === "Female");
@@ -110,15 +119,14 @@ export default function PrintContacts() {
   const activeFiltersCount = [
     roleFilter !== "all",
     genderFilter !== "all",
-    fiveYearsPlus,
-    minYears !== "",
+    minYears !== "any",
     soberFrom !== "",
     soberTo !== "",
   ].filter(Boolean).length;
 
   const clearFilters = () => {
-    setMinYears(""); setSoberFrom(""); setSoberTo("");
-    setRoleFilter("all"); setGenderFilter("all"); setFiveYearsPlus(false);
+    setMinYears("any"); setSoberFrom(""); setSoberTo("");
+    setRoleFilter("all"); setGenderFilter("all");
   };
 
   const visibleCols = ALL_COLUMNS.filter((c) => selectedCols.has(c.key));
@@ -226,7 +234,14 @@ export default function PrintContacts() {
           </div>
           <div className="space-y-1.5">
             <Label className="text-xs text-muted-foreground">Min years sober</Label>
-            <Input type="number" min={0} step={0.5} placeholder="e.g. 5" value={minYears} onChange={(e) => setMinYears(e.target.value)} className="h-8 text-xs" />
+            <Select value={minYears} onValueChange={setMinYears}>
+              <SelectTrigger className="h-8 text-xs"><SelectValue placeholder="Any" /></SelectTrigger>
+              <SelectContent>
+                {MIN_YEARS_OPTIONS.map((o) => (
+                  <SelectItem key={o.value} value={o.value}>{o.label}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
           <div className="space-y-1.5">
             <Label className="text-xs text-muted-foreground">Sober date — from</Label>
@@ -235,16 +250,6 @@ export default function PrintContacts() {
           <div className="space-y-1.5">
             <Label className="text-xs text-muted-foreground">Sober date — to</Label>
             <Input type="date" value={soberTo} onChange={(e) => setSoberTo(e.target.value)} className="h-8 text-xs" />
-          </div>
-          <div className="flex items-end pb-1">
-            <label className="flex items-center gap-2 cursor-pointer">
-              <Checkbox
-                checked={fiveYearsPlus}
-                onCheckedChange={(v) => setFiveYearsPlus(!!v)}
-                className="h-4 w-4"
-              />
-              <span className="text-xs text-foreground">5+ years sober</span>
-            </label>
           </div>
         </div>
 
@@ -294,11 +299,11 @@ export default function PrintContacts() {
         <h1 className="text-2xl font-bold">AA Member Contact List</h1>
         <p className="text-sm text-gray-500">
           Printed {new Date().toLocaleDateString("en-US", { weekday: "long", year: "numeric", month: "long", day: "numeric" })}
-          {activeFiltersCount > 0 && " · Filtered"}
           {roleFilter !== "all" && ` · Role: ${roleFilter}`}
           {genderFilter !== "all" && ` · ${genderFilter === "Male" ? "Men" : "Women"} only`}
-          {fiveYearsPlus && " · 5+ years sober"}
-          {minYears && ` · Min ${minYears} yrs sober`}
+          {minYears !== "any" && ` · ${minYears}+ years sober`}
+          {soberFrom && ` · Sober from ${soberFrom}`}
+          {soberTo && ` · to ${soberTo}`}
         </p>
         <p className="text-sm text-gray-500 font-medium mt-1">{filtered.length} member{filtered.length !== 1 ? "s" : ""}</p>
       </div>
