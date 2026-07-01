@@ -46,7 +46,10 @@ export default function AdminLogin() {
       <div className="w-full max-w-sm">
         <div className="text-center mb-8">
           <div className="w-12 h-12 rounded-xl bg-primary flex items-center justify-center mx-auto mb-4">
-            <span className="text-primary-foreground font-bold text-lg font-serif">AA</span>
+            <svg viewBox="0 0 32 32" width="36" height="36" aria-hidden="true">
+              <circle cx="16" cy="16" r="13" fill="none" stroke="#c49a3c" strokeWidth="2" />
+              <polygon points="16,7 25,23 7,23" fill="none" stroke="#c49a3c" strokeWidth="2" strokeLinejoin="round" />
+            </svg>
           </div>
           <h1 className="text-xl font-semibold text-foreground font-serif">Admin Sign In</h1>
           <p className="text-sm text-muted-foreground mt-1">Meeting Directory</p>

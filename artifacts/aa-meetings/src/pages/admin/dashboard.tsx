@@ -14,9 +14,17 @@ export default function AdminDashboard() {
   return (
     <AdminLayout>
       <div className="max-w-4xl">
-        <div className="mb-7">
-          <h1 className="text-2xl font-semibold text-foreground font-serif">Dashboard</h1>
-          <p className="text-muted-foreground text-sm mt-1">Overview of your AA meeting directory</p>
+        <div className="mb-7 flex items-center gap-4">
+          <div className="w-11 h-11 rounded-xl bg-primary flex items-center justify-center shrink-0">
+            <svg viewBox="0 0 32 32" width="32" height="32" aria-hidden="true">
+              <circle cx="16" cy="16" r="13" fill="none" stroke="#c49a3c" strokeWidth="2" />
+              <polygon points="16,7 25,23 7,23" fill="none" stroke="#c49a3c" strokeWidth="2" strokeLinejoin="round" />
+            </svg>
+          </div>
+          <div>
+            <h1 className="text-2xl font-semibold text-foreground font-serif">Dashboard</h1>
+            <p className="text-muted-foreground text-sm mt-0.5">Overview of your AA meeting directory</p>
+          </div>
         </div>
 
         {/* Stats */}
