@@ -56,6 +56,7 @@ export default function HiMeetingDetail() {
   });
   const { data: auth } = useAuth();
   const showContact = canManage(auth?.role);
+  const showSection = !!auth?.authenticated && auth.role !== "Guest";
 
   return (
     <PublicLayout>
@@ -125,7 +126,7 @@ export default function HiMeetingDetail() {
               )}
             </div>
 
-            {meeting.people && meeting.people.length > 0 && (
+            {showSection && meeting.people && meeting.people.length > 0 && (
               <div>
                 <h2 className="font-semibold text-sm text-foreground mb-3">H&amp;I Contacts &amp; Volunteers</h2>
                 <div className="space-y-2">

@@ -53,6 +53,7 @@ export default function MeetingDetail() {
   const id = match ? parseInt(params.id, 10) : 0;
   const { data: auth } = useAuth();
   const showContact = canManage(auth?.role);
+  const showSection = !!auth?.authenticated && auth.role !== "Guest";
 
   const { data: meeting, isLoading } = useGetMeeting(id, {
     query: { enabled: !!id, queryKey: getGetMeetingQueryKey(id) },
@@ -125,7 +126,7 @@ export default function MeetingDetail() {
             </div>
 
             {/* Contacts */}
-            {meeting.people && meeting.people.length > 0 && (
+            {showSection && meeting.people && meeting.people.length > 0 && (
               <div>
                 <h2 className="font-semibold text-sm text-foreground mb-3">Contacts &amp; Chairpersons</h2>
                 <div className="space-y-2">
