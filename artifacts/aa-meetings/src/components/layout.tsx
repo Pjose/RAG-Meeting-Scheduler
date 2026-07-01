@@ -56,13 +56,24 @@ export function PublicLayout({ children }: { children: React.ReactNode }) {
               H&amp;I
             </Link>
             {auth?.authenticated ? (
-              <button
-                onClick={handleLogout}
-                className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors px-3 py-1.5 rounded border border-border hover:border-border/80 hover:bg-muted"
-              >
-                <LogOut size={12} />
-                Sign Out
-              </button>
+              <>
+                {canManage(auth.role) && (
+                  <Link
+                    href="/admin"
+                    className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors px-3 py-1.5 rounded border border-border hover:border-border/80 hover:bg-muted"
+                  >
+                    <LayoutDashboard size={12} />
+                    Dashboard
+                  </Link>
+                )}
+                <button
+                  onClick={handleLogout}
+                  className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors px-3 py-1.5 rounded border border-border hover:border-border/80 hover:bg-muted"
+                >
+                  <LogOut size={12} />
+                  Sign Out
+                </button>
+              </>
             ) : (
               <Link
                 href="/admin"
