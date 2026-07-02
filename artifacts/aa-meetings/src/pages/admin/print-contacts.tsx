@@ -226,9 +226,10 @@ export default function PrintContacts() {
             <Select value={genderFilter} onValueChange={setGenderFilter}>
               <SelectTrigger className="h-8 text-xs"><SelectValue placeholder="All" /></SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">All</SelectItem>
+                <SelectItem value="all">All genders</SelectItem>
                 <SelectItem value="Male">Men</SelectItem>
                 <SelectItem value="Female">Women</SelectItem>
+                <SelectItem value="Non-binary">Non-binary</SelectItem>
               </SelectContent>
             </Select>
           </div>

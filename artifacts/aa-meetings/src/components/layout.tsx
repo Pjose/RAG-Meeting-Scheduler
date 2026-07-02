@@ -1,5 +1,5 @@
 import { Link, useLocation } from "wouter";
-import { Calendar, Users, LayoutDashboard, Menu, X, ChevronRight, Printer, Building2, LogOut, Star } from "lucide-react";
+import { Calendar, Users, LayoutDashboard, Menu, X, ChevronRight, Printer, Building2, LogOut, Star, ExternalLink } from "lucide-react";
 import { useState, useEffect } from "react";
 import { cn } from "@/lib/utils";
 import { useAuth, useLogout, canManage, isAdmin } from "@/lib/auth";
@@ -11,13 +11,22 @@ interface LayoutProps {
 
 export function PublicLayout({ children }: { children: React.ReactNode }) {
   const [location, setLocation] = useLocation();
+  const [mobileOpen, setMobileOpen] = useState(false);
   const { data: auth } = useAuth();
   const logout = useLogout();
+
+  // Close on route change
+  useEffect(() => { setMobileOpen(false); }, [location]);
 
   async function handleLogout() {
     await logout();
     setLocation("/");
   }
+
+  const navLinks = [
+    { href: "/", label: "Meetings" },
+    { href: "/hi", label: "H&I" },
+  ];
 
   return (
     <div className="min-h-screen bg-background">
@@ -35,29 +44,23 @@ export function PublicLayout({ children }: { children: React.ReactNode }) {
               <p className="text-xs text-muted-foreground hidden sm:block">Find a meeting near you</p>
             </div>
           </Link>
-          <div className="flex items-center gap-2">
-            <Link
-              href="/"
-              className={cn(
-                "text-xs px-3 py-1.5 rounded border transition-colors",
-                location === "/"
-                  ? "border-primary/40 text-primary bg-primary/8"
-                  : "border-border text-muted-foreground hover:text-foreground hover:border-border/80 hover:bg-muted"
-              )}
-            >
-              Meetings
-            </Link>
-            <Link
-              href="/hi"
-              className={cn(
-                "text-xs px-3 py-1.5 rounded border transition-colors",
-                location === "/hi"
-                  ? "border-primary/40 text-primary bg-primary/8"
-                  : "border-border text-muted-foreground hover:text-foreground hover:border-border/80 hover:bg-muted"
-              )}
-            >
-              H&amp;I
-            </Link>
+
+          {/* Desktop nav */}
+          <div className="hidden sm:flex items-center gap-2">
+            {navLinks.map(({ href, label }) => (
+              <Link
+                key={href}
+                href={href}
+                className={cn(
+                  "text-xs px-3 py-1.5 rounded border transition-colors",
+                  location === href
+                    ? "border-primary/40 text-primary bg-primary/8"
+                    : "border-border text-muted-foreground hover:text-foreground hover:border-border/80 hover:bg-muted"
+                )}
+              >
+                {label}
+              </Link>
+            ))}
             {auth?.authenticated ? (
               <>
                 {canManage(auth.role) && (
@@ -79,14 +82,72 @@ export function PublicLayout({ children }: { children: React.ReactNode }) {
               </>
             ) : (
               <Link
-                href="/admin"
+                href="/admin/login"
                 className="text-xs text-muted-foreground hover:text-foreground transition-colors px-3 py-1.5 rounded border border-border hover:border-border/80 hover:bg-muted"
               >
-                Admin
+                Login
               </Link>
             )}
           </div>
+
+          {/* Mobile hamburger */}
+          <button
+            className="sm:hidden p-2 rounded hover:bg-muted transition-colors text-muted-foreground"
+            onClick={() => setMobileOpen((v) => !v)}
+            aria-label="Toggle menu"
+          >
+            {mobileOpen ? <X size={20} /> : <Menu size={20} />}
+          </button>
         </div>
+
+        {/* Mobile dropdown */}
+        {mobileOpen && (
+          <div className="sm:hidden border-t border-border bg-card px-4 py-3 space-y-1">
+            {navLinks.map(({ href, label }) => (
+              <Link
+                key={href}
+                href={href}
+                className={cn(
+                  "block px-3 py-2 rounded text-sm transition-colors",
+                  location === href
+                    ? "bg-primary/8 text-primary font-medium"
+                    : "text-foreground hover:bg-muted"
+                )}
+              >
+                {label}
+              </Link>
+            ))}
+            <div className="border-t border-border pt-2 mt-2 space-y-1">
+              {auth?.authenticated ? (
+                <>
+                  {canManage(auth.role) && (
+                    <Link
+                      href="/admin"
+                      className="flex items-center gap-2 px-3 py-2 rounded text-sm text-foreground hover:bg-muted transition-colors"
+                    >
+                      <LayoutDashboard size={14} />
+                      Dashboard
+                    </Link>
+                  )}
+                  <button
+                    onClick={handleLogout}
+                    className="flex items-center gap-2 px-3 py-2 rounded text-sm text-foreground hover:bg-muted transition-colors w-full"
+                  >
+                    <LogOut size={14} />
+                    Sign Out
+                  </button>
+                </>
+              ) : (
+                <Link
+                  href="/admin/login"
+                  className="block px-3 py-2 rounded text-sm text-foreground hover:bg-muted transition-colors"
+                >
+                  Login
+                </Link>
+              )}
+            </div>
+          </div>
+        )}
       </header>
       <main>{children}</main>
     </div>

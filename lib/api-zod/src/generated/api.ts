@@ -368,6 +368,10 @@ export const GetStatsResponse = zod.object({
   "meetingsByInteraction": zod.array(zod.object({
   "label": zod.string(),
   "count": zod.number()
+})),
+  "meetingsByFormat": zod.array(zod.object({
+  "label": zod.string(),
+  "count": zod.number()
 }))
 })
 

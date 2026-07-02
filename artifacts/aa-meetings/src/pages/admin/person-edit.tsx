@@ -18,6 +18,10 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Skeleton } from "@/components/ui/skeleton";
+import {
+  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
+  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { useToast } from "@/hooks/use-toast";
 import { PERSON_ROLES, GENDERS, formatTime } from "@/lib/constants";
 import { useAuth, isAdmin } from "@/lib/auth";
@@ -49,6 +53,7 @@ export default function AdminPersonEdit() {
   const [loginPassword, setLoginPassword] = useState("");
   const [loginConfirm, setLoginConfirm] = useState("");
   const [loginSaving, setLoginSaving] = useState(false);
+  const [showRemoveLoginDialog, setShowRemoveLoginDialog] = useState(false);
 
   const { data: person, isLoading } = useGetPerson(id, {
     query: { enabled: !!id && !isNew, queryKey: getGetPersonQueryKey(id) },
@@ -146,7 +151,6 @@ export default function AdminPersonEdit() {
   };
 
   const handleRemoveLogin = async () => {
-    if (!confirm("Remove login access for this person?")) return;
     setLoginSaving(true);
     try {
       await fetch(`/api/people/${id}/set-password`, { method: "DELETE" });
@@ -357,7 +361,7 @@ export default function AdminPersonEdit() {
                   {hasLogin ? "Update Login" : "Set Login"}
                 </Button>
                 {hasLogin && (
-                  <Button size="sm" variant="outline" onClick={handleRemoveLogin} disabled={loginSaving}
+                  <Button size="sm" variant="outline" onClick={() => setShowRemoveLoginDialog(true)} disabled={loginSaving}
                     className="gap-1.5 text-destructive border-destructive/30 hover:bg-destructive/10">
                     <Trash2 size={13} />
                     Remove Login

@@ -953,7 +953,7 @@ components:
 
     Stats:
       type: object
-      required: [totalMeetings, totalPeople, totalHiMeetings, meetingsByDay, meetingsByType, meetingsByInteraction]
+      required: [totalMeetings, totalPeople, totalHiMeetings, meetingsByDay, meetingsByType, meetingsByInteraction, meetingsByFormat]
       properties:
         totalMeetings:
           type: integer
@@ -970,6 +970,10 @@ components:
           items:
             $ref: "#/components/schemas/CountByLabel"
         meetingsByInteraction:
+          type: array
+          items:
+            $ref: "#/components/schemas/CountByLabel"
+        meetingsByFormat:
           type: array
           items:
             $ref: "#/components/schemas/CountByLabel"

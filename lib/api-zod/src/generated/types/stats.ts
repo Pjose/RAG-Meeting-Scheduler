@@ -14,4 +14,5 @@ export interface Stats {
   meetingsByDay: CountByLabel[];
   meetingsByType: CountByLabel[];
   meetingsByInteraction: CountByLabel[];
+  meetingsByFormat: CountByLabel[];
 }

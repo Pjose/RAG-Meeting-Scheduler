@@ -12,9 +12,20 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/hooks/use-toast";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 export default function AdminTrustedServants() {
   const [search, setSearch] = useState("");
+  const [deleteTarget, setDeleteTarget] = useState<{ id: number; title: string } | null>(null);
   const { data, isLoading } = useListTrustedServants();
   const deleteMutation = useDeleteTrustedServant();
   const queryClient = useQueryClient();
@@ -25,11 +36,12 @@ export default function AdminTrustedServants() {
     (ts.memberName ?? "").toLowerCase().includes(search.toLowerCase())
   );
 
-  const handleDelete = async (id: number, title: string) => {
-    if (!confirm(`Remove "${title}"?`)) return;
-    await deleteMutation.mutateAsync({ id });
+  const confirmDelete = async () => {
+    if (!deleteTarget) return;
+    await deleteMutation.mutateAsync({ id: deleteTarget.id });
     queryClient.invalidateQueries({ queryKey: getListTrustedServantsQueryKey() });
     toast({ title: "Position removed" });
+    setDeleteTarget(null);
   };
 
   return (
@@ -99,7 +111,7 @@ export default function AdminTrustedServants() {
                   variant="ghost"
                   size="icon"
                   className="h-8 w-8 text-destructive/70 hover:text-destructive hover:bg-destructive/10"
-                  onClick={() => handleDelete(ts.id, ts.title)}
+                  onClick={() => setDeleteTarget({ id: ts.id, title: ts.title })}
                   disabled={deleteMutation.isPending}
                 >
                   <Trash2 size={14} />
@@ -109,6 +121,23 @@ export default function AdminTrustedServants() {
           ))}
         </div>
       )}
+
+      <AlertDialog open={!!deleteTarget} onOpenChange={() => setDeleteTarget(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Remove position?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This will permanently remove <span className="font-medium text-foreground">"{deleteTarget?.title}"</span> from the trusted servants list.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={confirmDelete} className="bg-destructive hover:bg-destructive/90">
+              Remove
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </AdminLayout>
   );
 }

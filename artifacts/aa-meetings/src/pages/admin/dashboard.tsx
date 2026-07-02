@@ -62,7 +62,7 @@ export default function AdminDashboard() {
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <BreakdownCard title="By Day" data={stats?.meetingsByDay ?? []} />
-            <BreakdownCard title="By Type" data={stats?.meetingsByType ?? []} />
+            <BreakdownCard title="By Format" data={stats?.meetingsByFormat ?? []} />
             <BreakdownCard title="By Mode" data={stats?.meetingsByInteraction ?? []} />
           </div>
         )}

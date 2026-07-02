@@ -1,6 +1,10 @@
 import { useEffect, useState } from "react";
 import { useRoute, useLocation } from "wouter";
 import { ArrowLeft, Trash2 } from "lucide-react";
+import {
+  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
+  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -75,6 +79,7 @@ export default function AdminHiMeetingEdit() {
 
   const [selectedPersonId, setSelectedPersonId] = useState("");
   const [selectedAssignedRole, setSelectedAssignedRole] = useState("");
+  const [removePersonTarget, setRemovePersonTarget] = useState<{ id: number; name: string } | null>(null);
 
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
@@ -144,10 +149,16 @@ export default function AdminHiMeetingEdit() {
     toast({ title: "Person assigned" });
   };
 
-  const handleRemove = async (personId: number) => {
-    await removeMutation.mutateAsync({ id, personId });
+  const handleRemove = (personId: number, name: string) => {
+    setRemovePersonTarget({ id: personId, name });
+  };
+
+  const confirmRemovePerson = async () => {
+    if (!removePersonTarget) return;
+    await removeMutation.mutateAsync({ id, personId: removePersonTarget.id });
     queryClient.invalidateQueries({ queryKey: getGetHiMeetingQueryKey(id) });
     toast({ title: "Person removed" });
+    setRemovePersonTarget(null);
   };
 
   const assignedIds = new Set((meeting?.people ?? []).map((p: any) => p.id));
@@ -328,7 +339,7 @@ export default function AdminHiMeetingEdit() {
                       variant="ghost"
                       size="icon"
                       className="h-7 w-7 text-destructive/70 hover:text-destructive hover:bg-destructive/10 shrink-0"
-                      onClick={() => handleRemove(person.id)}
+                      onClick={() => handleRemove(person.id, person.name)}
                     >
                       <Trash2 size={13} />
                     </Button>

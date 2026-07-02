@@ -109,6 +109,15 @@ router.get("/stats", async (_req, res): Promise<void> => {
     .groupBy(meetingsTable.interaction)
     .orderBy(meetingsTable.interaction);
 
+  const meetingsByFormat = await db
+    .select({
+      label: meetingsTable.format,
+      count: sql<number>`count(*)::int`,
+    })
+    .from(meetingsTable)
+    .groupBy(meetingsTable.format)
+    .orderBy(meetingsTable.format);
+
   res.json({
     totalMeetings,
     totalPeople,
@@ -116,6 +125,7 @@ router.get("/stats", async (_req, res): Promise<void> => {
     meetingsByDay,
     meetingsByType,
     meetingsByInteraction,
+    meetingsByFormat,
   });
 });
 
