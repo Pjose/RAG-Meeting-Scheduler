@@ -372,6 +372,26 @@ export default function AdminPersonEdit() {
           </div>
         )}
 
+      <AlertDialog open={showRemoveLoginDialog} onOpenChange={setShowRemoveLoginDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Remove login access?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This will permanently remove the login credentials for <span className="font-medium text-foreground">{currentUsername}</span>. They will no longer be able to sign in.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => { setShowRemoveLoginDialog(false); handleRemoveLogin(); }}
+              className="bg-destructive hover:bg-destructive/90"
+            >
+              Remove Login
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
         {/* Trusted Servant Positions */}
         {!isNew && trustedServants.length > 0 && (
           <div className="mt-4 bg-card border border-card-border rounded-xl p-5">

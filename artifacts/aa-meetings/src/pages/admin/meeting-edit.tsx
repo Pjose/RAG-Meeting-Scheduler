@@ -402,6 +402,23 @@ export default function AdminMeetingEdit() {
           </div>
         )}
       </div>
+
+      <AlertDialog open={!!removePersonTarget} onOpenChange={() => setRemovePersonTarget(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Remove person?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Remove <span className="font-medium text-foreground">{removePersonTarget?.name}</span> from this meeting's assignments?
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={confirmRemovePerson} className="bg-destructive hover:bg-destructive/90">
+              Remove
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </AdminLayout>
   );
 }
