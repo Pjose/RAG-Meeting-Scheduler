@@ -47,6 +47,15 @@ export function PublicLayout({ children }: { children: React.ReactNode }) {
 
           {/* Desktop nav */}
           <div className="hidden sm:flex items-center gap-2">
+            <a
+              href="https://rossavenuegroup.org"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-1 text-xs px-3 py-1.5 rounded border border-border text-muted-foreground hover:text-foreground hover:border-border/80 hover:bg-muted transition-colors"
+            >
+              <ExternalLink size={11} />
+              rossavenuegroup.org
+            </a>
             {navLinks.map(({ href, label }) => (
               <Link
                 key={href}
@@ -103,6 +112,15 @@ export function PublicLayout({ children }: { children: React.ReactNode }) {
         {/* Mobile dropdown */}
         {mobileOpen && (
           <div className="sm:hidden border-t border-border bg-card px-4 py-3 space-y-1">
+            <a
+              href="https://rossavenuegroup.org"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-2 px-3 py-2 rounded text-sm text-foreground hover:bg-muted transition-colors"
+            >
+              <ExternalLink size={14} />
+              rossavenuegroup.org
+            </a>
             {navLinks.map(({ href, label }) => (
               <Link
                 key={href}
