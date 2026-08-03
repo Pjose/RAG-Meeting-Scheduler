@@ -54,7 +54,7 @@ export function PublicLayout({ children }: { children: React.ReactNode }) {
               className="flex items-center gap-1 text-xs px-3 py-1.5 rounded border border-border text-muted-foreground hover:text-foreground hover:border-border/80 hover:bg-muted transition-colors"
             >
               <ExternalLink size={11} />
-              rossavenuegroup.org
+              Home
             </a>
             {navLinks.map(({ href, label }) => (
               <Link
@@ -119,7 +119,7 @@ export function PublicLayout({ children }: { children: React.ReactNode }) {
               className="flex items-center gap-2 px-3 py-2 rounded text-sm text-foreground hover:bg-muted transition-colors"
             >
               <ExternalLink size={14} />
-              rossavenuegroup.org
+              Home
             </a>
             {navLinks.map(({ href, label }) => (
               <Link
