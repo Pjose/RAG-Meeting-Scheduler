@@ -1,0 +1,23 @@
+diff --git a/vercel.json b/vercel.json
+index 1234567..89abcde 100644
+--- a/vercel.json
++++ b/vercel.json
+@@ -1,7 +1,7 @@
+ {
+   "$schema": "https://openapi.vercel.sh/vercel.json",
+-  "buildCommand": "pnpm install --frozen-lockfile=false && pnpm --filter @workspace/aa-meetings run build",
+-  "outputDirectory": "artifacts/aa-meetings/dist/public",
++  "buildCommand": "pnpm install --frozen-lockfile=false && pnpm --filter @workspace/aa-meetings run build && rm -rf public && cp -r artifacts/aa-meetings/dist/public public",
++  "outputDirectory": "public",
+   "installCommand": "echo skip-default-install",
+   "functions": {
+     "api/index.ts": {
+diff --git a/.gitignore b/.gitignore
+index c053244..30abd7a 100644
+--- a/.gitignore
++++ b/.gitignore
+@@ -50,3 +50,4 @@ Thumbs.db
+ 
+ # Vercel
+ .vercel
++/public
