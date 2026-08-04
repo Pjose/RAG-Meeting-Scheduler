@@ -1,0 +1,270 @@
+diff --git a/.gitignore b/.gitignore
+index 12bc7fa..c053244 100644
+--- a/.gitignore
++++ b/.gitignore
+@@ -47,3 +47,6 @@ Thumbs.db
+ # Replit
+ .cache/
+ .local/
++
++# Vercel
++.vercel
+diff --git a/api/index.ts b/api/index.ts
+new file mode 100644
+index 0000000..0473c62
+--- /dev/null
++++ b/api/index.ts
+@@ -0,0 +1,14 @@
++// Vercel serverless function entry point.
++//
++// This does NOT call app.listen() — on Replit the api-server ran as a
++// long-lived process (see artifacts/api-server/src/index.ts). On Vercel,
++// each request instead invokes this handler, which just hands the
++// request/response pair to the same Express app used before. All existing
++// routes, middleware, and session handling in artifacts/api-server/src/app.ts
++// are unchanged and reused as-is.
++import type { IncomingMessage, ServerResponse } from "node:http";
++import app from "../artifacts/api-server/src/app";
++
++export default function handler(req: IncomingMessage, res: ServerResponse) {
++  return app(req, res);
++}
+diff --git a/artifacts/aa-meetings/vite.config.ts b/artifacts/aa-meetings/vite.config.ts
+index 3fd6022..4e9e76f 100644
+--- a/artifacts/aa-meetings/vite.config.ts
++++ b/artifacts/aa-meetings/vite.config.ts
+@@ -4,27 +4,19 @@ import tailwindcss from "@tailwindcss/vite";
+ import path from "path";
+ import runtimeErrorOverlay from "@replit/vite-plugin-runtime-error-modal";
+ 
+-const rawPort = process.env.PORT;
+-
+-if (!rawPort) {
+-  throw new Error(
+-    "PORT environment variable is required but was not provided.",
+-  );
+-}
+-
++// PORT is only needed for the local `dev`/`serve` (vite preview) servers —
++// Vercel's build step never runs those, so we fall back to a dev-only
++// default instead of throwing when it's unset.
++const rawPort = process.env.PORT ?? "5173";
+ const port = Number(rawPort);
+ 
+ if (Number.isNaN(port) || port <= 0) {
+   throw new Error(`Invalid PORT value: "${rawPort}"`);
+ }
+ 
+-const basePath = process.env.BASE_PATH;
+-
+-if (!basePath) {
+-  throw new Error(
+-    "BASE_PATH environment variable is required but was not provided.",
+-  );
+-}
++// BASE_PATH controlled the mount path under Replit's multi-service router.
++// On Vercel the app is served from the domain root, so default to "/".
++const basePath = process.env.BASE_PATH ?? "/";
+ 
+ export default defineConfig({
+   base: basePath,
+diff --git a/artifacts/api-server/package.json b/artifacts/api-server/package.json
+index 57b3a85..efbcdc9 100644
+--- a/artifacts/api-server/package.json
++++ b/artifacts/api-server/package.json
+@@ -13,6 +13,7 @@
+     "@workspace/api-zod": "workspace:*",
+     "@workspace/db": "workspace:*",
+     "bcryptjs": "^3.0.3",
++    "connect-pg-simple": "^10.0.0",
+     "cookie-parser": "^1.4.7",
+     "cors": "^2.8.6",
+     "drizzle-orm": "catalog:",
+@@ -23,6 +24,7 @@
+   },
+   "devDependencies": {
+     "@types/bcryptjs": "^3.0.0",
++    "@types/connect-pg-simple": "^7.0.3",
+     "@types/cookie-parser": "^1.4.10",
+     "@types/cors": "^2.8.19",
+     "@types/express": "^5.0.6",
+diff --git a/artifacts/api-server/src/app.ts b/artifacts/api-server/src/app.ts
+index 283a873..81f0181 100644
+--- a/artifacts/api-server/src/app.ts
++++ b/artifacts/api-server/src/app.ts
+@@ -2,9 +2,13 @@ import express, { type Express } from "express";
+ import cors from "cors";
+ import pinoHttp from "pino-http";
+ import session from "express-session";
++import connectPgSimple from "connect-pg-simple";
++import { pool } from "@workspace/db";
+ import router from "./routes";
+ import { logger } from "./lib/logger";
+ 
++const PgSession = connectPgSimple(session);
++
+ const app: Express = express();
+ 
+ app.set("trust proxy", 1);
+@@ -38,12 +42,21 @@ if (!process.env.SESSION_SECRET) {
+ 
+ app.use(
+   session({
++    store: new PgSession({
++      pool,
++      tableName: "session",
++      createTableIfMissing: true,
++    }),
+     secret: process.env.SESSION_SECRET,
+     resave: false,
+     saveUninitialized: false,
+     cookie: {
+       httpOnly: true,
+       secure: process.env.NODE_ENV === "production",
++      // "none" is required so the session cookie survives being set from a
++      // Vercel serverless function response; sameSite defaults to "lax"
++      // otherwise, which is fine too since frontend and API share an origin.
++      sameSite: "lax",
+       maxAge: 7 * 24 * 60 * 60 * 1000,
+     },
+   }),
+diff --git a/lib/db/src/index.ts b/lib/db/src/index.ts
+index 50cbf48..186ac8b 100644
+--- a/lib/db/src/index.ts
++++ b/lib/db/src/index.ts
+@@ -10,7 +10,16 @@ if (!process.env.DATABASE_URL) {
+   );
+ }
+ 
+-export const pool = new Pool({ connectionString: process.env.DATABASE_URL });
++// `max` is kept low deliberately: on Vercel, every serverless function
++// instance gets its own pool, and many instances can run concurrently under
++// load. A small per-instance cap avoids exhausting the connection limit on
++// the database side. If you're using Neon, also make sure DATABASE_URL is
++// the *pooled* connection string (the one with "-pooler" in the hostname)
++// rather than the direct one, since that also fans out through PgBouncer.
++export const pool = new Pool({
++  connectionString: process.env.DATABASE_URL,
++  max: 5,
++});
+ export const db = drizzle(pool, { schema });
+ 
+ export * from "./schema";
+diff --git a/package.json b/package.json
+index 9686032..4a99b76 100644
+--- a/package.json
++++ b/package.json
+@@ -9,6 +9,9 @@
+     "typecheck": "pnpm run typecheck:libs && pnpm -r --filter \"./artifacts/**\" --filter \"./scripts\" --if-present run typecheck"
+   },
+   "private": true,
++  "engines": {
++    "node": "24.x"
++  },
+   "devDependencies": {
+     "prettier": "^3.8.3",
+     "typescript": "~5.9.3"
+diff --git a/pnpm-lock.yaml b/pnpm-lock.yaml
+index ccb23b9..98e3130 100644
+--- a/pnpm-lock.yaml
++++ b/pnpm-lock.yaml
+@@ -367,6 +367,9 @@ importers:
+       bcryptjs:
+         specifier: ^3.0.3
+         version: 3.0.3
++      connect-pg-simple:
++        specifier: ^10.0.0
++        version: 10.0.0
+       cookie-parser:
+         specifier: ^1.4.7
+         version: 1.4.7
+@@ -392,6 +395,9 @@ importers:
+       '@types/bcryptjs':
+         specifier: ^3.0.0
+         version: 3.0.0
++      '@types/connect-pg-simple':
++        specifier: ^7.0.3
++        version: 7.0.3
+       '@types/cookie-parser':
+         specifier: ^1.4.10
+         version: 1.4.10(@types/express@5.0.6)
+@@ -1644,6 +1650,9 @@ packages:
+   '@types/body-parser@1.19.6':
+     resolution: {integrity: sha512-HLFeCYgz89uk22N5Qg3dvGvsv46B8GLvKKo1zKG4NybA8U2DiEO3w9lqGg29t/tfLRJpJ6iQxnVw4OnB7MoM9g==}
+ 
++  '@types/connect-pg-simple@7.0.3':
++    resolution: {integrity: sha512-NGCy9WBlW2bw+J/QlLnFZ9WjoGs6tMo3LAut6mY4kK+XHzue//lpNVpAvYRpIwM969vBRAM2Re0izUvV6kt+NA==}
++
+   '@types/connect@3.4.38':
+     resolution: {integrity: sha512-K6uROf1LD88uDQqJCktA4yzL1YYAK6NgfsI0v/mTgyPKWsX1CnJ0XPSDhViejru1GcRkLWb8RlzFYJRqGUbaug==}
+ 
+@@ -1853,6 +1862,10 @@ packages:
+   compare-versions@6.1.1:
+     resolution: {integrity: sha512-4hm4VPpIecmlg59CHXnRDnqGplJFrbLG4aFEl5vl6cK1u76ws3LLvX7ikFnTDl5vo39sjWD6AaDPYodJp/NNHg==}
+ 
++  connect-pg-simple@10.0.0:
++    resolution: {integrity: sha512-pBGVazlqiMrackzCr0eKhn4LO5trJXsOX0nQoey9wCOayh80MYtThCbq8eoLsjpiWgiok/h+1/uti9/2/Una8A==}
++    engines: {node: ^18.18.0 || ^20.9.0 || >=22.0.0}
++
+   content-disposition@1.1.0:
+     resolution: {integrity: sha512-5jRCH9Z/+DRP7rkvY83B+yGIGX96OYdJmzngqnw2SBSxqCFPd0w2km3s5iawpGX8krnwSGmF0FW5Nhr0Hfai3g==}
+     engines: {node: '>=18'}
+@@ -4368,6 +4381,12 @@ snapshots:
+       '@types/connect': 3.4.38
+       '@types/node': 25.6.2
+ 
++  '@types/connect-pg-simple@7.0.3':
++    dependencies:
++      '@types/express': 5.0.6
++      '@types/express-session': 1.19.0
++      '@types/pg': 8.20.0
++
+   '@types/connect@3.4.38':
+     dependencies:
+       '@types/node': 25.6.2
+@@ -4590,6 +4609,12 @@ snapshots:
+ 
+   compare-versions@6.1.1: {}
+ 
++  connect-pg-simple@10.0.0:
++    dependencies:
++      pg: 8.20.0
++    transitivePeerDependencies:
++      - pg-native
++
+   content-disposition@1.1.0: {}
+ 
+   content-type@1.0.5: {}
+diff --git a/pnpm-workspace.yaml b/pnpm-workspace.yaml
+index 34d334c..39eccbf 100644
+--- a/pnpm-workspace.yaml
++++ b/pnpm-workspace.yaml
+@@ -158,3 +158,6 @@ overrides:
+   # drizzle-kit uses esbuild internally on an older version that's vulnerable, this overrides it
+   "@esbuild-kit/esm-loader": "npm:tsx@^4.21.0"
+   esbuild: "0.27.3"
++
++allowBuilds:
++  esbuild: true
+diff --git a/vercel.json b/vercel.json
+new file mode 100644
+index 0000000..7ad79f2
+--- /dev/null
++++ b/vercel.json
+@@ -0,0 +1,16 @@
++{
++  "$schema": "https://openapi.vercel.sh/vercel.json",
++  "buildCommand": "pnpm install --frozen-lockfile=false && pnpm --filter @workspace/aa-meetings run build",
++  "outputDirectory": "artifacts/aa-meetings/dist/public",
++  "installCommand": "echo skip-default-install",
++  "functions": {
++    "api/index.ts": {
++      "memory": 1024,
++      "maxDuration": 15
++    }
++  },
++  "rewrites": [
++    { "source": "/api/(.*)", "destination": "/api" },
++    { "source": "/((?!api/).*)", "destination": "/index.html" }
++  ]
++}
