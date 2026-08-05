@@ -1,0 +1,46 @@
+diff --git a/api/index.ts b/api/index.ts
+index e801ef1..abb081b 100644
+--- a/api/index.ts
++++ b/api/index.ts
+@@ -14,11 +14,20 @@
+ // that doesn't match this monorepo's own tsconfig setup — importing already
+ // -bundled plain JS sidesteps that mismatch entirely. See the neighboring
+ // app.d.mts for the (hand-written, stable) type this resolves to.
+-import type { IncomingMessage, ServerResponse } from "node:http";
++//
++// Deliberately NOT importing Node's real http types (IncomingMessage /
++// ServerResponse) here: Vercel's isolated check for this file doesn't
++// reliably resolve @types/node regardless of where it's declared in the
++// monorepo (tried it at the repo root — still failed). We only ever pass
++// req/res straight through without touching their properties, so a minimal
++// structural type is all this file actually needs. At runtime, Vercel's own
++// Node.js function runtime still invokes this with real Node request/
++// response objects — nothing about the actual behavior changes.
+ import app from "../artifacts/api-server/dist-handler/app.mjs";
+ 
+-export default function handler(req: IncomingMessage, res: ServerResponse) {
+-  return app(req, res);
++export default function handler(req: unknown, res: unknown): void {
++  (app as (req: unknown, res: unknown) => void)(req, res);
+ }
+ 
+ 
++
+diff --git a/artifacts/api-server/dist-handler/app.d.mts b/artifacts/api-server/dist-handler/app.d.mts
+index f76523c..e6736ed 100644
+--- a/artifacts/api-server/dist-handler/app.d.mts
++++ b/artifacts/api-server/dist-handler/app.d.mts
+@@ -22,7 +22,10 @@
+ // If the Express app's shape changes in a way that breaks this contract
+ // (it shouldn't — it's just "a function that takes a request and a
+ // response"), update this file to match.
+-import type { IncomingMessage, ServerResponse } from "node:http";
+-
+-declare const app: (req: IncomingMessage, res: ServerResponse) => void;
++//
++// Deliberately typed with `unknown` rather than Node's real IncomingMessage/
++// ServerResponse (from "node:http") — Vercel's isolated check for
++// /api/index.ts doesn't reliably resolve @types/node, and importing it here
++// would just push the same failure into this file instead.
++declare const app: (req: unknown, res: unknown) => void;
+ export default app;

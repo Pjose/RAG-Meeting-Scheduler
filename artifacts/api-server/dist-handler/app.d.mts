@@ -22,7 +22,10 @@
 // If the Express app's shape changes in a way that breaks this contract
 // (it shouldn't — it's just "a function that takes a request and a
 // response"), update this file to match.
-import type { IncomingMessage, ServerResponse } from "node:http";
-
-declare const app: (req: IncomingMessage, res: ServerResponse) => void;
+//
+// Deliberately typed with `unknown` rather than Node's real IncomingMessage/
+// ServerResponse (from "node:http") — Vercel's isolated check for
+// /api/index.ts doesn't reliably resolve @types/node, and importing it here
+// would just push the same failure into this file instead.
+declare const app: (req: unknown, res: unknown) => void;
 export default app;
