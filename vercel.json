@@ -1,6 +1,6 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
-  "buildCommand": "pnpm install --frozen-lockfile=false && pnpm --filter @workspace/aa-meetings run build && OUT=$(find . -type d -wholename '*dist/public' | head -1) && rm -rf public && cp -r \"$OUT\" public",
+  "buildCommand": "pnpm install --frozen-lockfile=false && pnpm --filter @workspace/aa-meetings run build && pnpm --filter @workspace/api-server run build:handler && OUT=$(find . -type d -wholename '*dist/public' | head -1) && rm -rf public && cp -r \"$OUT\" public",
   "outputDirectory": "public",
   "installCommand": "echo skip-default-install",
   "functions": {
