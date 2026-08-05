@@ -3,19 +3,55 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { build as esbuild } from "esbuild";
 import esbuildPluginPino from "esbuild-plugin-pino";
-import { rm } from "node:fs/promises";
+import { rm, readdir } from "node:fs/promises";
 
 // Plugins (e.g. 'esbuild-plugin-pino') may use `require` to resolve dependencies
 globalThis.require = createRequire(import.meta.url);
 
 const artifactDir = path.dirname(fileURLToPath(import.meta.url));
 
+// Supports two build targets from one script:
+//   node build.mjs                => full long-running server (src/index.ts -> dist/index.mjs)
+//   node build.mjs --handler-only => just the Express app, no app.listen()
+//                                    (src/app.ts -> dist-handler/app.mjs), used by the
+//                                    Vercel serverless function in /api/index.ts so that
+//                                    Vercel's own TypeScript check never has to parse our
+//                                    TS source directly under its stricter module
+//                                    resolution rules — it only ever sees plain, already
+//                                    -bundled JS plus the hand-written dist-handler/app.d.mts
+//                                    declaration file.
+const handlerOnly = process.argv.includes("--handler-only");
+const entry = handlerOnly ? "src/app.ts" : "src/index.ts";
+const outdir = handlerOnly ? "dist-handler" : "dist";
+
+async function cleanOutDir(distDir) {
+  if (!handlerOnly) {
+    // Full-server build: dist/ is 100% generated, safe to wipe entirely.
+    await rm(distDir, { recursive: true, force: true });
+    return;
+  }
+  // Handler-only build: dist-handler/app.d.mts is checked into git on
+  // purpose (see that file). Only clear out the generated bundle files
+  // (.mjs/.map) so re-running this build never deletes it.
+  const entries = await readdir(distDir, { withFileTypes: true }).catch(
+    () => [],
+  );
+  await Promise.all(
+    entries
+      .filter(
+        (e) =>
+          e.isFile() && (e.name.endsWith(".mjs") || e.name.endsWith(".map")),
+      )
+      .map((e) => rm(path.join(distDir, e.name), { force: true })),
+  );
+}
+
 async function buildAll() {
-  const distDir = path.resolve(artifactDir, "dist");
-  await rm(distDir, { recursive: true, force: true });
+  const distDir = path.resolve(artifactDir, outdir);
+  await cleanOutDir(distDir);
 
   await esbuild({
-    entryPoints: [path.resolve(artifactDir, "src/index.ts")],
+    entryPoints: [path.resolve(artifactDir, entry)],
     platform: "node",
     bundle: true,
     format: "esm",
