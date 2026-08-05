@@ -1,0 +1,26 @@
+diff --git a/package.json b/package.json
+index 4a99b76..5f8bcc7 100644
+--- a/package.json
++++ b/package.json
+@@ -13,6 +13,7 @@
+     "node": "24.x"
+   },
+   "devDependencies": {
++    "@types/node": "catalog:",
+     "prettier": "^3.8.3",
+     "typescript": "~5.9.3"
+   }
+diff --git a/pnpm-lock.yaml b/pnpm-lock.yaml
+index 98e3130..0857bea 100644
+--- a/pnpm-lock.yaml
++++ b/pnpm-lock.yaml
+@@ -157,6 +157,9 @@ importers:
+ 
+   .:
+     devDependencies:
++      '@types/node':
++        specifier: 'catalog:'
++        version: 25.6.2
+       prettier:
+         specifier: ^3.8.3
+         version: 3.8.3
