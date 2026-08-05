@@ -13,6 +13,7 @@
     "node": "24.x"
   },
   "devDependencies": {
+    "@types/node": "catalog:",
     "prettier": "^3.8.3",
     "typescript": "~5.9.3"
   }
