@@ -14,11 +14,20 @@
 // that doesn't match this monorepo's own tsconfig setup — importing already
 // -bundled plain JS sidesteps that mismatch entirely. See the neighboring
 // app.d.mts for the (hand-written, stable) type this resolves to.
-import type { IncomingMessage, ServerResponse } from "node:http";
+//
+// Deliberately NOT importing Node's real http types (IncomingMessage /
+// ServerResponse) here: Vercel's isolated check for this file doesn't
+// reliably resolve @types/node regardless of where it's declared in the
+// monorepo (tried it at the repo root — still failed). We only ever pass
+// req/res straight through without touching their properties, so a minimal
+// structural type is all this file actually needs. At runtime, Vercel's own
+// Node.js function runtime still invokes this with real Node request/
+// response objects — nothing about the actual behavior changes.
 import app from "../artifacts/api-server/dist-handler/app.mjs";
 
-export default function handler(req: IncomingMessage, res: ServerResponse) {
-  return app(req, res);
+export default function handler(req: unknown, res: unknown): void {
+  (app as (req: unknown, res: unknown) => void)(req, res);
 }
+
 
 
