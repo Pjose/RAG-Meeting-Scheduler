@@ -1,0 +1,36 @@
+diff --git a/artifacts/api-server/src/app.ts b/artifacts/api-server/src/app.ts
+index 81f0181..d505f0e 100644
+--- a/artifacts/api-server/src/app.ts
++++ b/artifacts/api-server/src/app.ts
+@@ -1,4 +1,4 @@
+-import express, { type Express } from "express";
++import express, { type Express, type NextFunction, type Request, type Response } from "express";
+ import cors from "cors";
+ import pinoHttp from "pino-http";
+ import session from "express-session";
+@@ -64,4 +64,25 @@ app.use(
+ 
+ app.use("/api", router);
+ 
++// Without this, an error thrown (or an async rejection, which Express 5
++// forwards automatically) anywhere in a route falls through to Express's
++// built-in default error handler, which sends a generic HTML "Internal
++// Server Error" page and — critically for debugging on Vercel — never logs
++// the actual error anywhere. pino-http's own request-completion log line
++// only reports the response's final status code, not what caused it.
++//
++// This surfaces the real error in Vercel's Runtime Logs (message + stack,
++// via the app's own structured logger) while still keeping the response body
++// generic, since request bodies/headers can contain sensitive data we don't
++// want echoed back to the client.
++app.use(
++  (err: unknown, req: Request, res: Response, _next: NextFunction) => {
++    logger.error({ err, path: req.path, method: req.method }, "Unhandled request error");
++    if (res.headersSent) {
++      return;
++    }
++    res.status(500).json({ error: "Internal server error" });
++  },
++);
++
+ export default app;
