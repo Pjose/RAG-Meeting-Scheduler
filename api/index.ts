@@ -41,6 +41,12 @@ declare const process: {
   on(event: string, listener: (...args: unknown[]) => void): void;
 };
 
+// Same story as `process` above — `console` is normally an ambient global
+// provided by @types/node, which this file deliberately avoids depending on.
+declare const console: {
+  error(...args: unknown[]): void;
+};
+
 // Safety net: Express's own error-handling middleware (added to app.ts) only
 // catches errors that flow through Express's normal request-handling chain
 // — a thrown error in a route, or a rejected promise from an async route
