@@ -71,13 +71,27 @@ app.use("/api", router);
 // the actual error anywhere. pino-http's own request-completion log line
 // only reports the response's final status code, not what caused it.
 //
-// This surfaces the real error in Vercel's Runtime Logs (message + stack,
-// via the app's own structured logger) while still keeping the response body
-// generic, since request bodies/headers can contain sensitive data we don't
-// want echoed back to the client.
+// This surfaces the real error in Vercel's Runtime Logs (message + stack)
+// while still keeping the response body generic, since request
+// bodies/headers can contain sensitive data we don't want echoed back to
+// the client.
+//
+// Uses plain console.error, not the pino `logger` used elsewhere in this
+// file — pino's actual write happens asynchronously on a background worker
+// thread (visible in the bundled output as pino-worker.mjs/
+// thread-stream-worker.mjs). In a serverless environment, Vercel can freeze
+// the execution context immediately after the HTTP response is sent, before
+// that background write completes, silently dropping the log. console.error
+// writes synchronously and is captured directly, so it can't get lost that
+// way.
 app.use(
   (err: unknown, req: Request, res: Response, _next: NextFunction) => {
-    logger.error({ err, path: req.path, method: req.method }, "Unhandled request error");
+    console.error(
+      "Unhandled request error:",
+      req.method,
+      req.path,
+      err instanceof Error ? err.stack : err,
+    );
     if (res.headersSent) {
       return;
     }

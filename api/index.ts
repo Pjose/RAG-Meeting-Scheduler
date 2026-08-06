@@ -33,8 +33,33 @@
 // exact same wall — the module type has to be fixed at the source.)
 import app from "../artifacts/api-server/dist-handler/app.mjs";
 
+// Minimal structural type for `process` — same reasoning as avoiding
+// IncomingMessage/ServerResponse above: Vercel's isolated check for this
+// file doesn't reliably resolve @types/node, so we don't rely on the global
+// `process` type it would normally provide.
+declare const process: {
+  on(event: string, listener: (...args: unknown[]) => void): void;
+};
+
+// Safety net: Express's own error-handling middleware (added to app.ts) only
+// catches errors that flow through Express's normal request-handling chain
+// — a thrown error in a route, or a rejected promise from an async route
+// handler (Express 5 forwards those automatically). It does NOT catch
+// callback-style errors that never call next(err) — e.g. from
+// connect-pg-simple's session store, which talks to Postgres via node-pg's
+// callback API internally — or errors from anything outside Express's
+// request cycle entirely. Those become unhandled rejections/exceptions,
+// which is why one of these two handlers, not Express's, is what actually
+// surfaces the real cause when Express's own error log line goes
+// unexpectedly missing.
+process.on("unhandledRejection", (reason) => {
+  console.error("UNHANDLED REJECTION in serverless function:", reason);
+});
+process.on("uncaughtException", (err) => {
+  console.error("UNCAUGHT EXCEPTION in serverless function:", err);
+});
+
 export default function handler(req: unknown, res: unknown): void {
   (app as (req: unknown, res: unknown) => void)(req, res);
 }
-
 
