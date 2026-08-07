@@ -40,13 +40,31 @@ if (!process.env.SESSION_SECRET) {
   throw new Error("SESSION_SECRET environment variable is required.");
 }
 
+const sessionStore = new PgSession({
+  pool,
+  tableName: "session",
+  // The "session" table is created via drizzle-kit push (see
+  // lib/db/src/schema/session.ts) rather than connect-pg-simple's own
+  // createTableIfMissing, which reads a SQL file from disk at a path that
+  // doesn't survive this app being bundled into a single file for
+  // deployment. See that schema file for the full explanation.
+  createTableIfMissing: false,
+});
+
+// connect-pg-simple's store is an EventEmitter and reports its own internal
+// failures (failing to create/query the session table, a connection error,
+// etc.) via an 'error' event — a completely separate path from Express's
+// normal request/error-handling chain, and one our error-handling middleware
+// further down can never see. An EventEmitter with no 'error' listener
+// throws synchronously the moment one fires, which is a likely culprit for
+// 500s that otherwise leave zero trace anywhere in our own logging.
+sessionStore.on("error", (err: unknown) => {
+  console.error("Session store error:", err instanceof Error ? err.stack : err);
+});
+
 app.use(
   session({
-    store: new PgSession({
-      pool,
-      tableName: "session",
-      createTableIfMissing: true,
-    }),
+    store: sessionStore,
     secret: process.env.SESSION_SECRET,
     resave: false,
     saveUninitialized: false,
