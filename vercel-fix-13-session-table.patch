@@ -1,0 +1,84 @@
+diff --git a/artifacts/api-server/src/app.ts b/artifacts/api-server/src/app.ts
+index c44d4ea..76ad2de 100644
+--- a/artifacts/api-server/src/app.ts
++++ b/artifacts/api-server/src/app.ts
+@@ -40,13 +40,31 @@ if (!process.env.SESSION_SECRET) {
+   throw new Error("SESSION_SECRET environment variable is required.");
+ }
+ 
++const sessionStore = new PgSession({
++  pool,
++  tableName: "session",
++  // The "session" table is created via drizzle-kit push (see
++  // lib/db/src/schema/session.ts) rather than connect-pg-simple's own
++  // createTableIfMissing, which reads a SQL file from disk at a path that
++  // doesn't survive this app being bundled into a single file for
++  // deployment. See that schema file for the full explanation.
++  createTableIfMissing: false,
++});
++
++// connect-pg-simple's store is an EventEmitter and reports its own internal
++// failures (failing to create/query the session table, a connection error,
++// etc.) via an 'error' event — a completely separate path from Express's
++// normal request/error-handling chain, and one our error-handling middleware
++// further down can never see. An EventEmitter with no 'error' listener
++// throws synchronously the moment one fires, which is a likely culprit for
++// 500s that otherwise leave zero trace anywhere in our own logging.
++sessionStore.on("error", (err: unknown) => {
++  console.error("Session store error:", err instanceof Error ? err.stack : err);
++});
++
+ app.use(
+   session({
+-    store: new PgSession({
+-      pool,
+-      tableName: "session",
+-      createTableIfMissing: true,
+-    }),
++    store: sessionStore,
+     secret: process.env.SESSION_SECRET,
+     resave: false,
+     saveUninitialized: false,
+diff --git a/lib/db/src/schema/index.ts b/lib/db/src/schema/index.ts
+index 2e6a33e..b4c5a06 100644
+--- a/lib/db/src/schema/index.ts
++++ b/lib/db/src/schema/index.ts
+@@ -4,3 +4,4 @@ export * from "./assignments";
+ export * from "./hi-meetings";
+ export * from "./hi-assignments";
+ export * from "./trusted-servants";
++export * from "./session";
+diff --git a/lib/db/src/schema/session.ts b/lib/db/src/schema/session.ts
+new file mode 100644
+index 0000000..a56221e
+--- /dev/null
++++ b/lib/db/src/schema/session.ts
+@@ -0,0 +1,28 @@
++import { pgTable, varchar, json, timestamp, index } from "drizzle-orm/pg-core";
++
++// Matches connect-pg-simple's required table structure exactly (see
++// node_modules/connect-pg-simple/table.sql) — this table is defined here,
++// managed by drizzle-kit push like every other table, rather than relying on
++// connect-pg-simple's own createTableIfMissing option.
++//
++// createTableIfMissing works by reading a table.sql file from disk at
++// runtime, relative to its own package directory (via __dirname). That's
++// incompatible with how the API server is deployed to Vercel: app.ts gets
++// bundled by esbuild into a single dist-handler/app.mjs file, and esbuild's
++// __dirname shim for bundled CommonJS code resolves relative to wherever the
++// *bundle* ends up, not connect-pg-simple's original package directory — so
++// table.sql is never actually found at runtime, and table creation silently
++// fails on every cold start where the table doesn't exist yet. Defining it
++// here instead means it's created the same reliable way as every other
++// table, and connect-pg-simple is configured with createTableIfMissing:
++// false in app.ts so it never attempts its own (broken, in this deployment)
++// creation path.
++export const sessionTable = pgTable(
++  "session",
++  {
++    sid: varchar("sid").primaryKey().notNull(),
++    sess: json("sess").notNull(),
++    expire: timestamp("expire", { precision: 6 }).notNull(),
++  },
++  (table) => [index("IDX_session_expire").on(table.expire)],
++);
